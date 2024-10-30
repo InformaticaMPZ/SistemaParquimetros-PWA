@@ -1,27 +1,33 @@
 {
-    "name": "My awesome PWA app",
-    "short_name": "PWA App",
-    "icons": [
-      {
-        "src": "/icons/dating1.png",
-        "sizes": "128x128",
-        "type": "image/png",
-        "purpose": "any maskable"
-      },
-      {
-        "src": "/icons/dating2.png",
-        "sizes": "256x256",
-        "type": "image/png"
-      },
-      {
-        "src": "/icons/dating3.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ],
-    "theme_color": "#FFFFFF",
-    "background_color": "#FFFFFF",
-    "start_url": "/",
-    "display": "standalone",
-    "orientation": "portrait"
-  }
+	"name": "Rice Bowl",
+	"short_name": "Rice Bowl",
+	"description": "Fluffless jasmine rice for those cold winter nights",
+	"icons": [
+		{
+			"src": "/images/icon-192.png",
+			"type": "image/png",
+			"sizes": "192x192"
+		},
+		{
+			"src": "/images/icon-512.png",
+			"type": "image/png",
+			"sizes": "512x512"
+		},
+		{
+			"src": "/images/icon-maskable-192.png",
+			"type": "image/png",
+			"sizes": "192x192",
+			"purpose": "maskable"
+		},
+		{
+			"src": "/images/icon-maskable-512.png",
+			"type": "image/png",
+			"sizes": "512x512",
+			"purpose": "maskable"
+		}
+	],
+	"start_url": "/?source=pwa",
+	"orientation": "portrait",
+	"display": "standalone",
+	"scope": "/"
+}

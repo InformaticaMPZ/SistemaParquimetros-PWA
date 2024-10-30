@@ -1,0 +1,53 @@
+export const formatAmount = (amount: number, decimales: number = 2) => {
+  const options: Intl.NumberFormatOptions = {
+    style: "currency",
+    currency: 'USD',
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  };
+
+  const numberFormated: number = Number(amount.toString().replace(',', '.'));
+  const response = new Intl.NumberFormat('en-US', options).format(numberFormated).replace('$', '₡ ');
+
+  return response;
+}
+
+export const formatDate = (date: Date | undefined, formatType: "date" | "time"): string => {
+  if (date != undefined) {
+    if (formatType === "date") {
+      return date.toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    }
+
+    if (formatType === "time") {
+      return date.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  }
+  return "";
+};
+
+export const getTimeRemaining = () => {
+  const now = new Date();
+  const fivePM = new Date();
+  fivePM.setHours(17, 0, 0, 0);
+  const timeDifference = fivePM.getTime() - now.getTime();
+  const remainingHours = Math.floor(timeDifference / (1000 * 60 * 60));
+  return remainingHours;
+};
+
+export const calculateEndTime = (totalHours: number, startDate:Date) => {
+  const newEndTime = new Date(startDate);
+  const fullHours = Math.floor(totalHours);
+  const fractionalHours = totalHours - fullHours; 
+  const minutes = Math.round(fractionalHours * 60);
+  newEndTime.setHours(newEndTime.getHours() + fullHours);
+  newEndTime.setMinutes(newEndTime.getMinutes() + minutes);
+  return newEndTime;
+};
