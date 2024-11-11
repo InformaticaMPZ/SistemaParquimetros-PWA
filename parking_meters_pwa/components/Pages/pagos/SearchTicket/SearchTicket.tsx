@@ -5,7 +5,7 @@ import { SearchTicketSchema } from './SearchTicketSchema';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 export const SearchTicket = forwardRef((_, ref) => {
-    const { getPlateTypes } = useParkingMetersStore();
+    const { getPlateTypes, setParkingTime } = useParkingMetersStore();
     const [ticketNumber, setTicketNumber] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -30,7 +30,9 @@ export const SearchTicket = forwardRef((_, ref) => {
             setErrors(formattedErrors);
             return false;
         }
-
+        setParkingTime({
+            ticketNumber: ticketNumber
+        });
         setErrors({});
         return true;
     };

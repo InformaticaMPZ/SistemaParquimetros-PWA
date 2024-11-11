@@ -7,6 +7,7 @@ import { CustomButton } from "components/General/CustomButton";
 interface VehicleFormModalProps {
     isOpen: boolean;
     plateSelected: any;
+    setPlateSelected:any;
     handleAddVehicle: () => void;
     handleDeleteVehicle: () => void;
     handleEditVehicle: (info: PlateInfo) => void;
@@ -17,6 +18,7 @@ interface VehicleFormModalProps {
 export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
     isOpen,
     plateSelected,
+    setPlateSelected,
     handleAddVehicle,
     handleDeleteVehicle,
     handleEditVehicle,
@@ -38,10 +40,10 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
                 <div className="relative bg-white rounded-xl shadow dark:bg-gray-700">
                     <CustomButton
                         color='gray'
-                        onClick={() => setIsOpen(false)}
+                        onClick={() => {setIsOpen(false); setPlateSelected(null);}}
                         Icon={FaTimes}
-                        className="absolute top-3 right-2.5 px-0 py-0 me-0 mb-0 mt-2"
-                        iconClassName="m-1"
+                        className="absolute top-3 right-2.5 top-6 px-0 py-0 me-0"
+                        iconClassName="mr-0"
                     />
                     <div className="pb-1">
                         <PlateInformation
@@ -52,6 +54,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
                         />
                         <div className="px-2 pt-4 pb-1 flex items-center justify-end">
                             <CustomButton
+                                className="px-6 py-2.5 me-2"
                                 actionButton='Guardar'
                                 color='green'
                                 onClick={setVehicule}
@@ -60,6 +63,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
 
                             {plateSelected && (
                                 <CustomButton
+                                    className="px-6 py-2.5 me-2"
                                     actionButton='Eliminar'
                                     color='red'
                                     onClick={handleDeleteVehicle}

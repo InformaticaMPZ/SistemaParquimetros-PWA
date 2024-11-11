@@ -15,7 +15,7 @@ const Navbar = () => {
 			<header className='text-white bg-gradient-to-r from-blue-800 via-blue-900 to-blue-950 font-medium shadow-lg rounded-b-md text-sm text-center'>
 				<div className='mx-auto flex h-20 max-w-screen items-center justify-between px-6'>
 					<Link href="/">
-						<img src="/images/logo.png" alt="Logo" className="h-16 my-2 md:mr-4" />
+						<img src="../images/logo.png" alt="Logo" className="h-16 my-2 md:mr-4" />
 					</Link>
 
 					<nav className='flex items-center space-x-6'>

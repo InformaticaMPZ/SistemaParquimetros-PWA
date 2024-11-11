@@ -176,9 +176,9 @@ export async function handleLogoutRequest() {
 
 export async function handleModelMethodRequest({ model, method, args, kwargs }: { model: string, method: string, args: any, kwargs: any }) {
   try {
+
     const connectResponse = await Actions.connect();
     if (!connectResponse.success) {
-      console.log("Error:", JSON.stringify(connectResponse));
       throw new Error(connectResponse.error || "Failed to connect to Odoo");
     }
 

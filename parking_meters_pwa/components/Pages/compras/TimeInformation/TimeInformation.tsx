@@ -15,7 +15,7 @@ import { TicketCounter } from '../TicketCounter';
 
 const roundToNextFiveMinutes = (date: Date) => {
     const minutes = date.getMinutes();
-    const roundedMinutes = Math.ceil(minutes / 5) * 5;
+    const roundedMinutes = Math.ceil(minutes / 10) * 10;
     return setMinutes(date, roundedMinutes);
 };
 
@@ -94,4 +94,4 @@ export const TimeInformation = forwardRef((_, ref) => {
     );
 });
 
-TimeInformation.displayName = 'TimeInformationSimple';
+TimeInformation.displayName = 'TimeInformation';

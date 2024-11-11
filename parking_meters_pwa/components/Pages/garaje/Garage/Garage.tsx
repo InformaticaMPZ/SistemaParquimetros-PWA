@@ -37,7 +37,15 @@ export const Garage = () => {
 
     return (
         <CustomCard title="Mi Garaje">
-            <SearchInput searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
+            <div className="w-full flex items-center justify-between my-5">
+                <CustomButton color="blue" actionButton="Nuevo" onClick={() => setIsOpen(true)} className="px-6 py-2.5 me-2 ms-4" />
+                <SearchInput searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+            </div>
+            <hr />
+            <p className="mt-1 ms-4 text-red-600 text-sm">Haga clic en el ícono del vehículo para marcarlo como su favorito</p>
+
+            <hr className="mb-4 mt-2" />
             <VehicleTable
                 plateInfo={plateInfo}
                 searchTerm={searchTerm}
@@ -48,14 +56,10 @@ export const Garage = () => {
                 }}
             />
 
-            <div className="w-full flex justify-end pr-4 mb-5">
-                <CustomButton color="blue" actionButton="Nuevo" onClick={() => setIsOpen(true)} />
-            </div>
-
-
             <VehicleFormModal
                 isOpen={isOpen}
                 plateSelected={plateSelected}
+                setPlateSelected={setPlateSelected}
                 handleAddVehicle={handleAddVehicle}
                 handleEditVehicle={handleEditVehicle}
                 handleDeleteVehicle={() => handleDeleteVehicle(plateSelected!)}

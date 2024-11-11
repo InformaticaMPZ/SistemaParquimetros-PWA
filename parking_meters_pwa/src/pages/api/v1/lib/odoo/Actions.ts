@@ -37,7 +37,7 @@ const connect = async (): Promise<{ success: boolean; data?: any; error?: any }>
 
   const json = JSON.stringify({ params: params });
   const url = `${protocol || "https"}://${host}:${port}/web/session/authenticate`;
-
+ 
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
   headers.append("Accept", "application/json");
@@ -52,6 +52,8 @@ const connect = async (): Promise<{ success: boolean; data?: any; error?: any }>
 
   try {
     const response = await fetch(url, options);
+    console.log(response);
+    
     if (useCookie) {
       session_id = response.headers.get("set-cookie")?.split(";")[0].split("=")[1];
       cookie = response.headers.get("set-cookie");
@@ -70,8 +72,9 @@ const connect = async (): Promise<{ success: boolean; data?: any; error?: any }>
       config.username = responseJson.result.username || config.username;
       return { success: true, data: responseJson.result };
     }
-  } catch (error) {
-    return { success: false, error: error };
+  } catch (ex) {
+    console.log(ex);
+    return { success: false, error: ex };
   }
 };
 

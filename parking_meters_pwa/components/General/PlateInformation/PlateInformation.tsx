@@ -7,7 +7,7 @@ import { CustomCard } from 'components/General/CustomCard';
 
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { FaStar } from 'react-icons/fa';
-import { CustomButton } from '../CustomButton';
+import Loading from '../LoadingForm/LoadingForm';
 
 
 interface PlateInformationProps {
@@ -18,7 +18,7 @@ interface PlateInformationProps {
 }
 
 export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, readOnly = false, isCard }: PlateInformationProps, ref) => {
-    const { plateTypeList, getPlateTypes, setParkingTime, fastPlateTypeList } = useParkingMetersStore();
+    const { plateTypeList, getPlateTypes, setParkingTime, fastPlateTypeList, loading } = useParkingMetersStore();
     const [selectedPlateType, setSelectedPlateType] = useState<any>(null);
     const [newKey, setNewKey] = useState('');
     const [plateDescription, setPlateDescription] = useState("");
@@ -78,10 +78,7 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
             let searchPlateType = plateTypeList.find((plate) => plate.description === descriptionPlate);
             formData.plateType = searchPlateType;
         }
-        setParkingTime({
-            plateTypeId: formData.plateType.id,
-            plateNumber: formData.vehiclePlate
-        });
+
 
         const validation = PlateInformationSchema.safeParse(formData);
 
@@ -93,6 +90,10 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
             setErrors(formattedErrors);
             return false;
         }
+        setParkingTime({
+            plateTypeId: formData.plateType.id,
+            plateNumber: formData.vehiclePlate
+        });
         setSelectedPlateType(null);
         setNewKey(Math.random().toString());
         setErrors({});
@@ -164,7 +165,7 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
                     />
                     <div className="rounded-md mt-2">
                         {fastPlateTypeList.map((type) => (
-                           <button
+                            <button
                                 key={type.id}
                                 type="button"
                                 onClick={() => {
@@ -194,6 +195,7 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
                     {renderFormContent()}
                 </div>
             )}
+            {loading && <Loading />}
         </div>
     );
 

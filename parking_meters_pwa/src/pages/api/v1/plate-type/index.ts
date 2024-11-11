@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
       res.status(200).json(JSON.parse(response.data).data);
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.status(500).json({ error: 'Internal Server Error2222222' });
     }
   } else {
     res.status(405).json({ message: 'Method Not Allowed' });

@@ -14,36 +14,40 @@ interface StoreState {
   getInfractions: () => Promise<ParkingResponse>;
   getPlateTypes: () => void;
   setParkingTime: (newParkingTime: Partial<ParkingTime>) => void;
+  resetParkingTime: () => void;
   loading: boolean;
   error: string | null;
 }
+
+const initialParkingTime: ParkingTime = {
+  plateTypeId: 0,
+  plateNumber: "",
+  plateDetailId: 0,
+  parkingRateId: [],
+  startTime: new Date(),
+  endTime: new Date(),
+  email: "",
+  phone: "",
+  id: "",
+  lastName: "",
+  name: "",
+  amount: 0,
+  ticketNumber: ""
+};
 
 const useParkingMetersStore = create<StoreState>((set, get) => ({
   parkingRateList: [],
   plateTypeList: [],
   fastPlateTypeList: [],
-  parkingTime: {
-    plateTypeId: 0,
-    plateNumber: "",
-    plateDetailId: 0,
-    parkingRateId: [],
-    startTime: new Date(),
-    endTime: new Date(),
-    email: "",
-    phone: "",
-    id: "",
-    lastName: "",
-    name: "",
-    amount: 0,
-    ticketNumber:"10001"
-  },
+  parkingTime: { ...initialParkingTime },
   loading: false,
   error: null,
 
   getParkingRates: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/parking-rate`, {
+      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
+      const response = await fetch(`${url}/api/v1/parking-rate`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -61,10 +65,16 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
     }
   },
   getPlateTypes: async () => {
+    const { plateTypeList } = get();
+    if (plateTypeList && plateTypeList.length > 0) {
+      return;
+    }
+
     set({ loading: true, error: null });
-    
+
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/plate-type`, {
+      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
+      const response = await fetch(`${url}/api/v1/plate-type`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -87,11 +97,13 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       set({ plateTypeList: [], error: (error as Error).message, loading: false });
     }
   },
+
   getParkingTime: async (): Promise<ParkingResponse> => {
     const currentParkingTime = get().parkingTime;
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/parking-time`, {
+      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
+      const response = await fetch(`${url}/api/v1/parking-time`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,8 +116,7 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       }
 
       const result = await response.json();
-      
-      
+
       set({ loading: false });
       return JSON.parse(result.data);
 
@@ -121,7 +132,8 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
     const currentParkingTime = get().parkingTime;
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/infraction`, {
+      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
+      const response = await fetch(`${url}/api/v1/infraction`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,11 +142,11 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to post parking time");
+        throw new Error("Failed to post to get infraction");
       }
 
       const result = await response.json();
- 
+
       set({ loading: false });
       return result;
 
@@ -151,6 +163,9 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       parkingTime: { ...state.parkingTime, ...newParkingTime },
     }));
   },
+  resetParkingTime: () => {
+    set({ parkingTime: { ...initialParkingTime } });
+  }
 }));
 
 export default useParkingMetersStore;

@@ -23,7 +23,7 @@ export const CustomButton = ({ onClick, actionButton, color, Icon = FaPlus, butt
         key={buttonKey}
         onClick={onClick}
         type="button"
-        className={`flex items-center text-white font-medium rounded-lg text-sm px-6 py-2.5 me-2 mb-2 focus:outline-none focus:ring-4 ${colorClasses[color]} ${className}`}
+        className={`flex items-center text-white font-medium rounded-lg text-sm focus:outline-none focus:ring-4 ${colorClasses[color]} ${className}`}
     >
         <Icon size={20} className={`${iconClassName}`} />
         {actionButton && (actionButton)}

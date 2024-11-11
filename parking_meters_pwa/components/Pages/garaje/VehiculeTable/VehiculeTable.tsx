@@ -1,7 +1,7 @@
 import React from "react";
 import { FavoriteToggle } from "../FavoriteToggle";
 import { IconType } from "react-icons";
-import { FaUser, FaCog } from "react-icons/fa";
+import { FaRegListAlt, FaRegFilePowerpoint } from "react-icons/fa";
 
 interface PlateInfo {
     plateNumber: string;
@@ -21,18 +21,23 @@ interface VehicleTableProps {
 
 interface ButtonComponentProps {
     label: string;
+    text: string;
     Icon: IconType;
 }
 
-const ButtonComponent: React.FC<ButtonComponentProps> = ({ label, Icon }) => (
+const ButtonComponent: React.FC<ButtonComponentProps> = ({ label, text, Icon }) => (
     <button
         type="button"
-        className="relative inline-flex items-center w-full px-4 py-2 text-sm font-medium border-b border-gray-200 dark:border-gray-600"
+        className="relative inline-flex items-start w-full px-4 py-2"
     >
-        <Icon className="w-4 h-4 mr-2.5" aria-hidden="true" />
-        {label}
+        <Icon className="w-4 h-5 mr-2.5 flex-shrink-0" aria-hidden="true" />
+        <div className="flex items-start w-full justify-start space-x-2">
+            <p className="text-sm font-medium">{label}</p>
+            <p className="text-sm font-normal flex-grow text-left">{text}</p>
+        </div>
     </button>
 );
+
 
 export const VehicleTable: React.FC<VehicleTableProps> = ({ plateInfo, searchTerm, handleFavoriteToggle, handleEditVehicle }) => {
     const filteredPlateInfo = plateInfo.filter((info) =>
@@ -40,19 +45,27 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({ plateInfo, searchTer
     );
 
     return (
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 mx-4 mb-4">
             {filteredPlateInfo.length > 0 ? (
                 filteredPlateInfo.map((info, index) => (
                     <div
+                        onClick={() => handleEditVehicle(info)}
                         key={index}
-                        className="flex min-w-0 flex-grow text-gray-900 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white hover:bg-gray-100 hover:border-gray-400 dark:hover:bg-gray-600 dark:hover:border-gray-500 dark:hover:text-white"
+                        className="flex min-w-0 flex-grow text-gray-900 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-200 dark:text-white hover:bg-gray-100 hover:border-gray-400 dark:hover:bg-gray-600 dark:hover:border-gray-500 dark:hover:text-white"
                     >
-                        {/* <FaMotorcycle  size={60} className="object-cover rounded-l-lg border" /> */}
-                        <FavoriteToggle isFavorite={info.favorite} isCar={info.plateType?.description !== "MOTOCICLETAS"} onClick={() => handleFavoriteToggle(index)} />
-                        <div className="flex flex-col flex-grow">
-                            <div className="relative bg-gray-200 inline-flex items-center w-full px-4 py-2 text-sm font-medium border-b border-gray-200 dark:border-gray-600">Vehículo registrado</div>
-                            <ButtonComponent label={`Placa: ${info.plateNumber}`} Icon={FaUser} />
-                            <ButtonComponent label={`Tipo: ${info.plateType?.description}`} Icon={FaCog} />
+                        <div className="border-r border-gray-300 rounded-s-lg px-2 mt-auto mb-auto h-full flex justify-center items-center ">
+                            <FavoriteToggle
+                                isFavorite={info.favorite}
+                                isCar={info.plateType?.description !== "MOTOCICLETAS" && info.plateType?.description !== "BICIMOTOS"}
+                                onClick={() => handleFavoriteToggle(index)}
+                            />
+                        </div>
+
+                        <div className="flex flex-col flex-grow ">
+                            <div className="relative bg-gray-200 inline-flex items-center w-full px-4 py-2 rounded-tr-lg text-lg font-medium border-b border-gray-300 dark:bg-gray-600 dark:border-gray-400">Vehículo Registrado</div>
+                            <ButtonComponent label={"Placa:"} text={`${info.plateNumber}`} Icon={FaRegFilePowerpoint} />
+                            <hr />
+                            <ButtonComponent label={"Tipo:"} text={`${info.plateType?.description}`} Icon={FaRegListAlt} />
 
                         </div>
                     </div>
@@ -68,41 +81,3 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({ plateInfo, searchTer
 };
 
 export default VehicleTable;
-
-
-
-
-
-// <div className="relative overflow-x-auto shadow-lg sm:rounded-lg m-5">
-//     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-//         <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-//             Datos de la Placa
-//         </caption>
-//         <thead className="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
-//             <tr>
-//                 <th scope="col" className="px-2 py-3 w-[65px]">Número</th>
-//                 <th scope="col" className="px-2 py-3">Tipo</th>
-//                 <th scope="col" className="px-2 py-3 w-[70px] text-center">Favorito</th>
-//             </tr>
-//         </thead>
-//         <tbody>
-//             {filteredPlateInfo.length > 0 ? (
-//                 filteredPlateInfo.map((info, index) => (
-//                     <tr key={index} onClick={() => handleEditVehicle(info)} className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
-//                         <td className="w-[65px] px-2 py-4 whitespace-nowrap">{info.plateNumber}</td>
-//                         <td className="px-2 py-4">{info.plateType?.description}</td>
-//                         <td className="px-2 py-4 text-center w-[70px]">
-//                             <FavoriteToggle isFavorite={info.favorite} onClick={() => handleFavoriteToggle(index)} />
-//                         </td>
-//                     </tr>
-//                 ))
-//             ) : (
-//                 <tr>
-//                     <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-//                         No hay información de la placa disponible
-//                     </td>
-//                 </tr>
-//             )}
-//         </tbody>
-//     </table>
-// </div>
