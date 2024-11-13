@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app';
 import { ThemeProvider } from 'next-themes';
 import Head from 'next/head';
 import '../../styles/globals.css';
+import { PushNotification } from 'components/General/PushNotification';
 
 export default function App({ Component, pageProps }: AppProps) {
 	return (
@@ -17,6 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
 				defaultTheme='system'
 				disableTransitionOnChange
 			>
+				<PushNotification />
 				<Component {...pageProps} />
 			</ThemeProvider>
 		</>

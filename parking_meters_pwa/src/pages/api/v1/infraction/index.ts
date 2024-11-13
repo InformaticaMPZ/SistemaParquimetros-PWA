@@ -24,9 +24,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       let { plateNumber, plateTypeId, ticketNumber } = req.body;
 
-      // if (!plateNumber || !plateTypeId) {
-      //   return res.status(400).json({ error: 'Missing plateNumber or plateTypeId' });
-      // }
+      if (!plateNumber || !plateTypeId) {
+        return res.status(400).json({ error: 'Missing plateNumber or plateTypeId' });
+      }
 
       let domain = [];
       if (plateNumber && plateTypeId) {
@@ -36,9 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (ticketNumber) {
         domain = [['ticket_number', '=', ticketNumber]];
       }
-      console.log(domain);
-      
-
+   
       const response = await handleGetRequest({
         model: "parking_meters.infraction",
         domain: domain,

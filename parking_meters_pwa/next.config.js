@@ -8,9 +8,11 @@ const withPWA = require('next-pwa')({
   swSrc: 'public/custom-sw.js',
   register: true,
   skipWaiting: true,
-  scope: '/apps/app_pagos_tiempo/',
-  sw: "sw.js",
-  disable: process.env.NODE_ENV === 'development'
+  // scope: process.env.NODE_ENV === 'development' ? '/' : '/apps/app_pagos_tiempo/',
+  scope:  '/',
+  // sw: "sw.js",
+  // disable: process.env.NODE_ENV === 'development',
+  publicExcludes: ['!custom-sw.js'],
 });
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -26,10 +28,10 @@ module.exports = withPWA({
     ODOO_PROTOCOL: process.env.ODOO_PROTOCOL,
     NEXT_API_REQUEST: process.env.NEXT_API_REQUEST,
   },
-  ...(isProd && {
-    output: 'export',
-    basePath: '/apps/app_pagos_tiempo',
-    assetPrefix: '/apps/app_pagos_tiempo/',
-  }),
+  // ...(isProd && {
+  //   output: 'export',
+  //   basePath: '/apps/app_pagos_tiempo',
+  //   assetPrefix: '/apps/app_pagos_tiempo/',
+  // }),
   trailingSlash: true,
 });

@@ -3,6 +3,7 @@ import { ParkingTime } from "@/types/parkingTime";
 import { PlateType } from "@/types/plateType";
 import { ParkingResponse } from "@/types/response";
 import { create } from "zustand";
+import CryptoJS from 'crypto-js';
 
 interface StoreState {
   parkingRateList: Array<ParkingRate>;
@@ -13,6 +14,7 @@ interface StoreState {
   getParkingTime: () => Promise<ParkingResponse>;
   getInfractions: () => Promise<ParkingResponse>;
   getPlateTypes: () => void;
+  getPushSubscription: (subscription: PushSubscription) => Promise<ParkingResponse>;
   setParkingTime: (newParkingTime: Partial<ParkingTime>) => void;
   resetParkingTime: () => void;
   loading: boolean;
@@ -42,12 +44,10 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
   parkingTime: { ...initialParkingTime },
   loading: false,
   error: null,
-
   getParkingRates: async () => {
     set({ loading: true, error: null });
     try {
-      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
-      const response = await fetch(`${url}/api/v1/parking-rate`, {
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/parking-rate`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -73,8 +73,7 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
-      const response = await fetch(`${url}/api/v1/plate-type`, {
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/plate-type`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -97,13 +96,11 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       set({ plateTypeList: [], error: (error as Error).message, loading: false });
     }
   },
-
   getParkingTime: async (): Promise<ParkingResponse> => {
     const currentParkingTime = get().parkingTime;
     set({ loading: true, error: null });
     try {
-      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
-      const response = await fetch(`${url}/api/v1/parking-time`, {
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/parking-time`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -132,8 +129,7 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
     const currentParkingTime = get().parkingTime;
     set({ loading: true, error: null });
     try {
-      const url = process.env.NEXT_API_REQUEST || 'http://localhost:3000';
-      const response = await fetch(`${url}/api/v1/infraction`, {
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/infraction`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -165,7 +161,42 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
   },
   resetParkingTime: () => {
     set({ parkingTime: { ...initialParkingTime } });
-  }
+  },
+  getPushSubscription: async (subscription: PushSubscription): Promise<ParkingResponse> => {
+    set({ loading: true, error: null });
+
+    try {
+      const encryptedSubscription = CryptoJS.AES.encrypt(
+        JSON.stringify(subscription),
+        process.env.NEXT_PUBLIC_ENCRYPTION_KEY as string
+      ).toString();
+
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/subscribe`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ encryptedSubscription }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to post to get subscription");
+      }
+
+      const result = await response.json();
+
+      set({ loading: false });
+      return result;
+
+    } catch (error) {
+      set({ loading: false });
+      return {
+        success: false,
+        message: (error as Error).message
+      };
+    }
+  },
+
 }));
 
 export default useParkingMetersStore;

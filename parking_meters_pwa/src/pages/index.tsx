@@ -9,6 +9,12 @@ const Index = () => {
 
   useEffect(() => {
     const redirectToConsulta = () => {
+      if ('Notification' in window) {
+        Notification.requestPermission();
+      } else {
+        console.warn("El navegador no soporta notificaciones.");
+      }
+
       if (typeof window !== 'undefined' && window.localStorage) {
         const { pathname } = router;
         if (pathname === '/') {

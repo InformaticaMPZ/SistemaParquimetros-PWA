@@ -45,19 +45,22 @@ export const PaymentForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("paragar");
+    
     e.preventDefault();
     const result = paymentFormSchema.safeParse(formData);
     if (!result.success) {
       const formattedErrors = result.error.format();
       setErrors(formattedErrors);
     } else {
-      getParkingTime().then((response) => {
-        if (!response.success) {
-          setIsModalOpen(true);
-          setErrors(response.message);
-        }
-      });
+      // getParkingTime().then((response) => {
+      //   if (!response.success) {
+      //     setIsModalOpen(true);
+      //     setErrors(response.message);
+      //   }
+      // });
     }
+
   };
 
   const selectedPlateType = plateTypeList

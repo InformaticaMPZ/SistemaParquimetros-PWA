@@ -52,8 +52,7 @@ const connect = async (): Promise<{ success: boolean; data?: any; error?: any }>
 
   try {
     const response = await fetch(url, options);
-    console.log(response);
-    
+   
     if (useCookie) {
       session_id = response.headers.get("set-cookie")?.split(";")[0].split("=")[1];
       cookie = response.headers.get("set-cookie");
@@ -73,7 +72,6 @@ const connect = async (): Promise<{ success: boolean; data?: any; error?: any }>
       return { success: true, data: responseJson.result };
     }
   } catch (ex) {
-    console.log(ex);
     return { success: false, error: ex };
   }
 };
@@ -192,7 +190,6 @@ const _request = async (path: string, params: any, retry: boolean = true): Promi
         await connect(); 
         return await _request(path, params, false);
       }
-      console.log(responseJson.error);
       return { success: false, error: responseJson.error };
     } else {
       return { success: true, data: responseJson.result };
