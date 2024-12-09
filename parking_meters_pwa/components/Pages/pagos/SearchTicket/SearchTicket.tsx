@@ -5,7 +5,7 @@ import { SearchTicketSchema } from './SearchTicketSchema';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 export const SearchTicket = forwardRef((_, ref) => {
-    const { getPlateTypes, setParkingTime } = useParkingMetersStore();
+    const { getPlateTypes, setParkingTime, getClientIP } = useParkingMetersStore();
     const [ticketNumber, setTicketNumber] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 

@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
-import { handleGetRequest } from '@/pages/api/v1/lib/odoo/RequestHelpers';
 
 const cors = Cors({
   methods: ['POST', 'HEAD'],
@@ -27,50 +26,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!plateNumber || !plateTypeId) {
         return res.status(400).json({ error: 'Missing plateNumber or plateTypeId' });
       }
-
-      let domain = [];
-      if (plateNumber && plateTypeId) {
-        domain.push(['plate_number', '=', plateNumber], ['plate_type_id', '=', plateTypeId]);
+    
+      let currentInfraction = {
+        plate_number: plateNumber,
+        plate_type_id: plateTypeId,
+        ticket_number: ticketNumber
       }
 
-      if (ticketNumber) {
-        domain = [['ticket_number', '=', ticketNumber]];
-      }
-   
-      const response = await handleGetRequest({
-        model: "parking_meters.infraction",
-        domain: domain,
-        defaultFields: [
-          'id',
-          'ticket_number',
-          'plate_type_id',
-          'plate_number',
-          'plate_detail_id',
-          'infraction_price_id',
-          'first_location',
-          'second_location',
-          'third_location',
-          'infraction_state_id',
-          'registration_date',
-          'brand_code_id',
-          'color_code_id',
-          'article_code_id',
-          'clause_code_id',
-          'vehicule_code_id',
-          'observations',
-          'latitude',
-          'longitude',
-          'surcharge',
-          'cancellation_description',
-          'inspector_user_id'
-        ],
-        defaultOffset: 0,
-        defaultLimit: 10,
-        defaultOrder: 'id DESC',
+      const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/get_infractions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ "params": currentInfraction }),
       });
-      let result = await response.json();
 
-      res.status(200).json(result);
+      if (!response.ok) {
+        throw new Error("Failed to get infractions");
+      }
+
+      const jsonResponse = await response.json();
+
+      res.status(200).json(jsonResponse.result);
     } catch (error) {
       res.status(500).json({ error: 'Internal Server Error' });
     }

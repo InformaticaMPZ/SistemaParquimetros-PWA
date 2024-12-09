@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CustomCard } from 'components/General/CustomCard';
 import { paymentFormSchema } from './PaymentFormSchema';
 import useParkingMetersStore from '@/store/useParkingMeters.store';
@@ -8,9 +8,11 @@ import { PayerDetailsForm } from '../PayerDetailsForm';
 import { ContactInfoForm } from '../ContactInfoForm';
 import { PlateSummary } from '../PlateSummary';
 import { PaymentConfirmationForm } from '../PaymentConfirmationForm';
+import { usePushNotifications } from '@/hooks/usePushNotification';
 
 export const PaymentForm = () => {
-  const { plateTypeList, parkingTime, setParkingTime, getParkingTime, loading } = useParkingMetersStore();
+  const { subscribeToPushNotifications } = usePushNotifications();
+  const { plateTypeList, parkingTime, setParkingTime, getParkingTime, loading,getClientIP } = useParkingMetersStore();
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
@@ -21,9 +23,17 @@ export const PaymentForm = () => {
     lastName: '',
     amount: 0
   });
-
+  useEffect(() => { getClientIP(); }, [getClientIP]);
   const [errors, setErrors] = useState<any>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const inputRefs = {
+    id: useRef<HTMLInputElement>(null),
+    name: useRef<HTMLInputElement>(null),
+    lastName: useRef<HTMLInputElement>(null),
+    email: useRef<HTMLInputElement>(null),
+    phone: useRef<HTMLInputElement>(null),
+  };
 
   const closeModal = () => setIsModalOpen(false);
 
@@ -45,22 +55,38 @@ export const PaymentForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("paragar");
-    
     e.preventDefault();
+    
     const result = paymentFormSchema.safeParse(formData);
     if (!result.success) {
       const formattedErrors = result.error.format();
-      setErrors(formattedErrors);
-    } else {
-      // getParkingTime().then((response) => {
-      //   if (!response.success) {
-      //     setIsModalOpen(true);
-      //     setErrors(response.message);
-      //   }
-      // });
+      const firstErrorField = Object.keys(formattedErrors)[1];
+      if (firstErrorField && firstErrorField in inputRefs) {
+        inputRefs[firstErrorField as keyof typeof inputRefs]?.current?.focus();
+      }
+      setErrors(result.error.format());
+      return;
     }
 
+    if ('serviceWorker' in navigator) {
+      try {
+        await navigator.serviceWorker.register(process.env.NODE_ENV === 'development' ? '/sw.js' : '/apps/app_pagos_tiempo/sw.js');
+        let responseSubscription = await subscribeToPushNotifications();
+        if (responseSubscription.success) {
+          setParkingTime({ subscription: responseSubscription.data });
+          const response = await getParkingTime();
+          if (!response.success) {
+            throw new Error(response.message);
+          }
+          router.push(response.data);
+        } else {
+          throw new Error(responseSubscription.message);
+        }
+      } catch (error:any) {
+        setIsModalOpen(true);
+        setErrors(error.message);
+      }
+    }
   };
 
   const selectedPlateType = plateTypeList
@@ -76,11 +102,10 @@ export const PaymentForm = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5">
       <div className="col-span-1 md:col-span-3 md:col-start-2">
-
         <CustomCard title='Datos del Pagador' className='p-4' >
           <form>
-            <PayerDetailsForm formData={formData} errors={errors} handleInputChange={handleInputChange} />
-            <ContactInfoForm formData={formData} errors={errors} handleInputChange={handleInputChange} handleCheckboxChange={handleCheckboxChange} />
+            <PayerDetailsForm inputRefs={inputRefs} formData={formData} errors={errors} handleInputChange={handleInputChange} />
+            <ContactInfoForm inputRefs={inputRefs} formData={formData} errors={errors} handleInputChange={handleInputChange} handleCheckboxChange={handleCheckboxChange} />
           </form>
         </CustomCard>
 
@@ -102,7 +127,6 @@ export const PaymentForm = () => {
           />
         </CustomCard>
         {loading && <Loading />}
-
       </div>
     </div>
   );

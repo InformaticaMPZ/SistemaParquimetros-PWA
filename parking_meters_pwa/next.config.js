@@ -1,21 +1,20 @@
 /** @type {import('next').NextConfig} */
-
+const os = require('os');
 const dotenv = require('dotenv');
 dotenv.config({ path: '.env.production' });
+const IP_API_PRODUCCION = '172.19.0.37';
+const currentIP = Object.values(os.networkInterfaces()).flat().find((iface) => iface && iface.family === 'IPv4' && !iface.internal)?.address;
 
 const withPWA = require('next-pwa')({
   dest: 'public',
-  swSrc: 'public/custom-sw.js',
   register: true,
   skipWaiting: true,
-  // scope: process.env.NODE_ENV === 'development' ? '/' : '/apps/app_pagos_tiempo/',
-  scope:  '/',
-  // sw: "sw.js",
-  // disable: process.env.NODE_ENV === 'development',
-  publicExcludes: ['!custom-sw.js'],
+  scope: process.env.NODE_ENV === 'development' || currentIP === IP_API_PRODUCCION ? '/' : '/apps/app_pagos_tiempo/',
+  sw: "sw.js",
+  swSrc: 'public/custom-sw.js', 
 });
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production' && currentIP != IP_API_PRODUCCION;
 
 module.exports = withPWA({
   reactStrictMode: true,
@@ -28,10 +27,10 @@ module.exports = withPWA({
     ODOO_PROTOCOL: process.env.ODOO_PROTOCOL,
     NEXT_API_REQUEST: process.env.NEXT_API_REQUEST,
   },
-  // ...(isProd && {
-  //   output: 'export',
-  //   basePath: '/apps/app_pagos_tiempo',
-  //   assetPrefix: '/apps/app_pagos_tiempo/',
-  // }),
+  ...(isProd && {
+    output: 'export',
+    basePath: '/apps/app_pagos_tiempo',
+    assetPrefix: '/apps/app_pagos_tiempo/',
+  }),
   trailingSlash: true,
 });

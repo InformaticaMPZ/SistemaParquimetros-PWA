@@ -4,9 +4,14 @@ interface PayerDetailsProps {
   formData: { id: string; name: string; lastName: string };
   errors: any;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  inputRefs: {
+    id: React.RefObject<HTMLInputElement>;
+    name: React.RefObject<HTMLInputElement>;
+    lastName: React.RefObject<HTMLInputElement>;
+  };
 }
 
-export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors, handleInputChange }) => (
+export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors, handleInputChange, inputRefs }) => (
   <div>
     <div>
       <label
@@ -16,6 +21,7 @@ export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors
         Cédula
       </label>
       <input
+        ref={inputRefs.id}
         autoFocus
         type="text"
         name="id"
@@ -37,6 +43,7 @@ export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors
           Nombre
         </label>
         <input
+          ref={inputRefs.name}
           type="text"
           id="name"
           name="name"
@@ -56,6 +63,7 @@ export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors
           Apellidos
         </label>
         <input
+          ref={inputRefs.lastName}
           type="text"
           id="lastName"
           name="lastName"

@@ -5,9 +5,13 @@ interface ContactInfoProps {
     errors: any;
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    inputRefs: {
+        email: React.RefObject<HTMLInputElement>;
+        phone: React.RefObject<HTMLInputElement>;
+    };
 }
 
-export const ContactInfoForm: React.FC<ContactInfoProps> = ({ formData, errors, handleInputChange }) => (
+export const ContactInfoForm: React.FC<ContactInfoProps> = ({ formData, errors, handleInputChange,inputRefs }) => (
     <div>
         <div className="grid grid-cols-1 md:grid-cols-8 md:gap-4">
             <div className='col-span-5'>
@@ -18,6 +22,7 @@ export const ContactInfoForm: React.FC<ContactInfoProps> = ({ formData, errors, 
                     Correo electrónico
                 </label>
                 <input
+                    ref={inputRefs.email}
                     type="email"
                     id="email"
                     name="email"
@@ -37,6 +42,7 @@ export const ContactInfoForm: React.FC<ContactInfoProps> = ({ formData, errors, 
                     Teléfono
                 </label>
                 <input
+                ref={inputRefs.phone}
                     type="text"
                     id="phone"
                     name="phone"

@@ -12,4 +12,6 @@ export interface ParkingTime {
     lastName:string;
     amount:number;
     ticketNumber?:string;
+    subscription:string;
+    ip:string;
   }

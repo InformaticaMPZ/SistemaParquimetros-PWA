@@ -3,7 +3,6 @@ import { ParkingTime } from "@/types/parkingTime";
 import { PlateType } from "@/types/plateType";
 import { ParkingResponse } from "@/types/response";
 import { create } from "zustand";
-import CryptoJS from 'crypto-js';
 
 interface StoreState {
   parkingRateList: Array<ParkingRate>;
@@ -12,11 +11,12 @@ interface StoreState {
   parkingTime: ParkingTime;
   getParkingRates: () => void;
   getParkingTime: () => Promise<ParkingResponse>;
+  getPayment: (temporalId:string) => Promise<ParkingResponse>;
   getInfractions: () => Promise<ParkingResponse>;
   getPlateTypes: () => void;
-  getPushSubscription: (subscription: PushSubscription) => Promise<ParkingResponse>;
   setParkingTime: (newParkingTime: Partial<ParkingTime>) => void;
   resetParkingTime: () => void;
+  getClientIP : () => void;
   loading: boolean;
   error: string | null;
 }
@@ -34,7 +34,9 @@ const initialParkingTime: ParkingTime = {
   lastName: "",
   name: "",
   amount: 0,
-  ticketNumber: ""
+  ticketNumber: "",
+  subscription:"",
+  ip:""
 };
 
 const useParkingMetersStore = create<StoreState>((set, get) => ({
@@ -53,13 +55,14 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
           "Content-Type": "application/json",
         },
       });
-
+      
       if (!response.ok) {
         throw new Error("Failed to fetch parking rates");
       }
 
       const data = await response.json();
-      set({ parkingRateList: data, loading: false });
+     
+      set({ parkingRateList: data.data, loading: false });
     } catch (error) {
       set({ parkingRateList: [], error: (error as Error).message, loading: false });
     }
@@ -86,18 +89,20 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
 
       const data = await response.json();
       const filterDescriptions = ["PARTICULARES", "MOTOCICLETAS", "CARGA LIVIANA", "PERMISOS DE TAXI"];
-
-      const filteredPlateTypes = data.filter((plateType: { description: string }) =>
+      let jsonData = JSON.parse(data.data);
+    
+      const filteredPlateTypes = jsonData.data.filter((plateType: { description: string }) =>
         filterDescriptions.includes(plateType.description)
       );
 
-      set({ plateTypeList: data, loading: false, fastPlateTypeList: filteredPlateTypes });
+      set({ plateTypeList: jsonData.data, loading: false, fastPlateTypeList: filteredPlateTypes });
     } catch (error) {
       set({ plateTypeList: [], error: (error as Error).message, loading: false });
     }
   },
   getParkingTime: async (): Promise<ParkingResponse> => {
     const currentParkingTime = get().parkingTime;
+   
     set({ loading: true, error: null });
     try {
       const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/parking-time`, {
@@ -113,9 +118,9 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       }
 
       const result = await response.json();
-
+     
       set({ loading: false });
-      return JSON.parse(result.data);
+      return JSON.parse(JSON.stringify(result));
 
     } catch (error) {
       set({ loading: false });
@@ -154,33 +159,19 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       };
     }
   },
-  setParkingTime: (newParkingTime: Partial<ParkingTime>) => {
-    set((state) => ({
-      parkingTime: { ...state.parkingTime, ...newParkingTime },
-    }));
-  },
-  resetParkingTime: () => {
-    set({ parkingTime: { ...initialParkingTime } });
-  },
-  getPushSubscription: async (subscription: PushSubscription): Promise<ParkingResponse> => {
+  getPayment: async (temporalId:string): Promise<ParkingResponse> => {
     set({ loading: true, error: null });
-
     try {
-      const encryptedSubscription = CryptoJS.AES.encrypt(
-        JSON.stringify(subscription),
-        process.env.NEXT_PUBLIC_ENCRYPTION_KEY as string
-      ).toString();
-
-      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/subscribe`, {
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ encryptedSubscription }),
+        body: JSON.stringify({"temporalId":temporalId}),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to post to get subscription");
+        throw new Error("Failed to post to get infraction");
       }
 
       const result = await response.json();
@@ -196,7 +187,25 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       };
     }
   },
-
+  setParkingTime: (newParkingTime: Partial<ParkingTime>) => {
+    set((state) => ({
+      parkingTime: { ...state.parkingTime, ...newParkingTime },
+    }));
+  },
+  resetParkingTime: () => {
+    set({ parkingTime: { ...initialParkingTime } });
+  },
+  getClientIP: async () => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      set((state) => ({
+        parkingTime: { ...state.parkingTime, ip: data.ip },
+      }));
+    } catch (error) {
+      console.error('Error fetching IP:', error);
+    }
+  },
 }));
 
 export default useParkingMetersStore;

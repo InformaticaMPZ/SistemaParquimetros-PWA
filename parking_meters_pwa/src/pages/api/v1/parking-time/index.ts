@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
-import { handleModelMethodRequest } from '@/pages/api/v1/lib/odoo/RequestHelpers';
 
 const cors = Cors({
   methods: ['POST', 'HEAD'],
@@ -22,28 +21,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const response = await handleModelMethodRequest({
-        model: "parking_meters.parking_time",
-        method: "create_parking_time",
-        args: [],
-        kwargs: {
-            plate_number: req.body.plateNumber,
-            plate_type_id:req.body.plateTypeId,
-            parking_rate_ids:req.body.parkingRateId,
-            end_time: req.body.endTime.replace("T"," ").replace(".000Z",""),
-            start_time: req.body.startTime.replace("T"," ").replace(".000Z",""),
-            email: req.body.email,
-            phone: req.body.phone,
-            name: req.body.name,
-            last_name: req.body.lastName,
-            id: req.body.id
-        }
+      let body = req.body;
+
+      if (typeof req.body === 'string') {
+        body = JSON.parse(req.body);
+      }
+      let currentParkingTime = {
+        plate_number: body.plateNumber,
+        plate_type_id: body.plateTypeId,
+        parking_rate_ids: body.parkingRateId,
+        end_time: body.endTime.replace("T", " ").replace(".000Z", ""),
+        start_time: body.startTime.replace("T", " ").replace(".000Z", ""),
+        email: body.email,
+        phone: body.phone,
+        name: body.name,
+        last_name: body.lastName,
+        id: body.id,
+        subscription: body.subscription,
+        ip:body.ip,
+        amount:body.amount
+      }
+
+      const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/create_parking_time`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ "params": currentParkingTime }),
       });
-      res.status(200).json(response.data);
+
+      if (!response.ok) {
+        throw new Error("Failed to add parking time");
+      }
+
+      const jsonResponse = await response.json();
+
+      res.status(200).json(jsonResponse.result);
     } catch (error) {
+      console.error('Error:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   } else {
     res.status(405).json({ message: 'Method Not Allowed' });
   }
 }
+

@@ -1,34 +1,28 @@
-const baseUrl = self.location.hostname === 'localhost' ? ''
-  : '/apps/app_pagos_tiempo';
+import { precacheAndRoute } from 'workbox-precaching';
+import { clientsClaim } from 'workbox-core';
 
-importScripts(baseUrl + '/workbox/workbox-sw.js');
+const baseUrl = process.env.NODE_ENV === 'development' ? '' : '/apps/app_pagos_tiempo';
 
-if (workbox) {
-  workbox.setConfig({ debug: false });
-  workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
+const updatedManifest = (self.__WB_MANIFEST || []).map((entry) => {
+  if (entry.url.includes('/sw.js')) { 
+    entry.url = `${baseUrl}/sw.js`;
+  }
+  return entry;
+});
 
-  workbox.routing.registerRoute(
-    ({ request }) => request.destination === 'image',
-    new workbox.strategies.CacheFirst({
-      cacheName: 'images-cache',
-      plugins: [
-        new workbox.expiration.ExpirationPlugin({
-          maxEntries: 50,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 días
-        }),
-      ],
-    })
-  );
-} else {
-  console.error('Workbox no se ha cargado correctamente');
-}
+precacheAndRoute(updatedManifest);
+clientsClaim();
+
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
 
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
 
-  self.registration.showNotification(data.title, {
-    body: data.body,
-    icon: baseUrl + '/images/escudo.png',
-    badge: baseUrl + '/images/escudo.png',
+  self.registration.showNotification(data.title || 'Título por defecto', {
+    body: data.body || 'Cuerpo de notificación por defecto',
+    icon: `${baseUrl}/images/icon-192.png`,
+    badge: `${baseUrl}/images/icon-192.png`,
   });
 });

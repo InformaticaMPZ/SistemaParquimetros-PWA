@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
 
 const cors = Cors({
-  methods: ['GET', 'HEAD'],
+  methods: ['POST', 'HEAD'],
 });
 
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
@@ -19,19 +19,23 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, cors);
 
-  if (req.method === 'GET') {
+  if (req.method === 'POST') {
     try {
-      const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/get_parking_rate`, {
+        let { temporalId } = req.body;
+
+      if (!temporalId) {
+        return res.status(400).json({ error: 'Missing temporal invoice' });
+      }
+      const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/get_payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ "params": "" }),
+        body: JSON.stringify({ "params": { "tem_invoice": temporalId } }),
       });
-      
-      
+
       if (!response.ok) {
-        throw new Error("Failed to get parking rate");
+        throw new Error("Failed to get payment");
       }
 
       const jsonResponse = await response.json();

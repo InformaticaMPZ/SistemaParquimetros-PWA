@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
-import { handleModelMethodRequest } from '@/pages/api/v1/lib/odoo/RequestHelpers';
 
 const cors = Cors({
   methods: ['GET', 'HEAD'],
@@ -21,16 +20,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await runMiddleware(req, res, cors);
   if (req.method === 'GET') {
     try {
-      const response = await handleModelMethodRequest({
-        model: "parking_meters.plate_type",
-        method: "get_plates_with_types",
-        args: [],
-        kwargs: {}
+      const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/get_plate_type`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ "params": "" }),
       });
-    
-      res.status(200).json(JSON.parse(response.data).data);
+      
+      
+      if (!response.ok) {
+        throw new Error("Failed to get parking rate");
+      }
+
+      const jsonResponse = await response.json();
+
+      res.status(200).json(jsonResponse.result);
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error2222222' });
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   } else {
     res.status(405).json({ message: 'Method Not Allowed' });

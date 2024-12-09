@@ -8,13 +8,12 @@ const Index = () => {
   const router = useRouter();
 
   useEffect(() => {
+
     const redirectToConsulta = () => {
       if ('Notification' in window) {
         Notification.requestPermission();
-      } else {
-        console.warn("El navegador no soporta notificaciones.");
       }
-
+      
       if (typeof window !== 'undefined' && window.localStorage) {
         const { pathname } = router;
         if (pathname === '/') {
@@ -39,7 +38,7 @@ const Index = () => {
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
         <main className="dark:bg-gray-800">
-          Redirecting to consulta...
+          Redireccionando a consulta...
         </main>
       </Section>
     </Page>
