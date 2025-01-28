@@ -5,6 +5,14 @@ const cors = Cors({
     methods: ['POST', 'HEAD'],
 });
 
+export const config = {
+    api: {
+      bodyParser: {
+        sizeLimit: '10mb',
+      },
+    },
+  };
+
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
     return new Promise((resolve, reject) => {
         fn(req, res, (result: any) => {
@@ -25,44 +33,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await runMiddleware(req, res, cors);
         const { ODOO_REQUEST } = process.env;
         const sessionId = req.headers['credential'];
-  
+        let { imageId } = req.body;
         if (!sessionId) {
             throw new Error(`Permiso denegado, usuario no autenticado`);
         }
 
-        const plateTypeResponse = await fetch(`${ODOO_REQUEST}/api/v1/get_plate_type`, {
+        const imageResponse = await fetch(`${ODOO_REQUEST}/api/v1/images`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Cookie': `session_id=${sessionId}`,
             },
-            body: JSON.stringify({ params: {} }),
+            body: JSON.stringify({ params: { "id_infraction": imageId } }),
         });
 
-        if (!plateTypeResponse.ok) {
-            throw new Error(`Lista de tipos de placas falló: ${plateTypeResponse.status} - ${await plateTypeResponse.text()}`);
+        if (!imageResponse.ok) {
+            throw new Error(`Lista de imagenes falló: ${imageResponse.status} - ${await imageResponse.text()}`);
         }
 
-        const dataResponse = await plateTypeResponse.json();
+        const dataResponse = await imageResponse.json();
         const jsonResult = JSON.parse(dataResponse.result.data);
-       
+
         if (!dataResponse.result.success) {
             throw new Error(`Error desde Odoo: ${dataResponse.message}`);
         }
 
-        const plateTypeList = jsonResult.data.map((plate: any) => ({
-            Id: plate.id,
-            Description: plate.description,
-            PlateDetails: plate.plate_details.map((detail: any) => ({
-                Id: detail.id,
-                ClassCode: detail.class_code,
-                GovermentCode: detail.government_code
-            }))
-        }));
-
         return res.status(200).json({
             success: true,
-            data: plateTypeList,
+            data: jsonResult,
         });
     } catch (error: any) {
         res.status(500).json({

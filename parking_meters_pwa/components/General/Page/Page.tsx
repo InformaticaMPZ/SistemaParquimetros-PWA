@@ -3,17 +3,19 @@ import Navbar from "../Navbar/Navbar"
 
 interface Props {
 	title?: string
-	children: React.ReactNode
+	children: React.ReactNode,
+	haveBottoms?: boolean
 }
 
-export const Page = ({ title, children }: Props) => (
+export const Page = ({ children, haveBottoms= true }: Props) => (
 	<>
-		<Navbar />
+		<Navbar haveBottoms={haveBottoms} />
 
 		<main className='mt-24 pb-16 px-safe sm:pb-0' >
 			<div className='ps-2 pe-2'>{children}</div>
 		</main>
-		<BottomNavBar />
+		{haveBottoms && <BottomNavBar />}
+		
 	</>
 )
 

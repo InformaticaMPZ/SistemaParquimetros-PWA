@@ -49,13 +49,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         body: JSON.stringify({ "params": currentParkingTime }),
       });
-
+   
       if (!response.ok) {
         throw new Error("Failed to add parking time");
       }
 
       const jsonResponse = await response.json();
-
+  
       res.status(200).json(jsonResponse.result);
     } catch (error) {
       console.error('Error:', error);

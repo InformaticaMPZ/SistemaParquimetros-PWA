@@ -25,7 +25,7 @@ export const VehicleActions = ({
         if (submitSuccess) {
             const newVehicle = {
                 plateNumber: parkingTime.plateNumber,
-                plateType: plateTypeList.find((type) => type.id === parkingTime.plateTypeId),
+                plateType: plateTypeList.find((type:any) => type.Id === parkingTime.plateTypeId),
                 favorite: storedPlateInfo.length == 0,
             };
 

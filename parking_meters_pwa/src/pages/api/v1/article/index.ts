@@ -25,12 +25,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await runMiddleware(req, res, cors);
         const { ODOO_REQUEST } = process.env;
         const sessionId = req.headers['credential'];
-  
+
         if (!sessionId) {
             throw new Error(`Permiso denegado, usuario no autenticado`);
         }
 
-        const plateTypeResponse = await fetch(`${ODOO_REQUEST}/api/v1/get_plate_type`, {
+        const articleResponse = await fetch(`${ODOO_REQUEST}/api/v1/get_articles`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -39,30 +39,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             body: JSON.stringify({ params: {} }),
         });
 
-        if (!plateTypeResponse.ok) {
-            throw new Error(`Lista de tipos de placas falló: ${plateTypeResponse.status} - ${await plateTypeResponse.text()}`);
+        if (!articleResponse.ok) {
+            throw new Error(`Lista de articulos falló: ${articleResponse.status} - ${await articleResponse.text()}`);
         }
 
-        const dataResponse = await plateTypeResponse.json();
+        const dataResponse = await articleResponse.json();
         const jsonResult = JSON.parse(dataResponse.result.data);
        
         if (!dataResponse.result.success) {
             throw new Error(`Error desde Odoo: ${dataResponse.message}`);
         }
 
-        const plateTypeList = jsonResult.data.map((plate: any) => ({
-            Id: plate.id,
-            Description: plate.description,
-            PlateDetails: plate.plate_details.map((detail: any) => ({
-                Id: detail.id,
-                ClassCode: detail.class_code,
-                GovermentCode: detail.government_code
+        const articleList = jsonResult.data.map((article: any) => ({
+            Id: article.id,
+            Article: article.article,
+            Definition: article.definition,
+            Title: article.title,
+            Clauses: article.clauses.map((clause: any) => ({
+                Id: clause.id,
+                Name: clause.name,
+                Description: clause.description,
+                Title: clause.title
             }))
         }));
 
         return res.status(200).json({
             success: true,
-            data: plateTypeList,
+            data: articleList,
         });
     } catch (error: any) {
         res.status(500).json({

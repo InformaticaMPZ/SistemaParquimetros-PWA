@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { FaRegClock, FaRegMoneyBillAlt, FaSearch,FaWarehouse } from 'react-icons/fa'
+import { FaRegClock, FaRegMoneyBillAlt, FaWarehouse } from 'react-icons/fa'
 
 const BottomNavBar = () => {
 	const router = useRouter()

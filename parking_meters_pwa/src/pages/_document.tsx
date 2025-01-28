@@ -14,8 +14,10 @@ export default function Document() {
 				<meta name='theme-color' content='#f4f4f5' />
 				<link rel='apple-touch-icon' href='../images/icon-maskable-512.png' />
 				<link rel='manifest' href={process.env.NEXT_PUBLIC_MANIFEST_PATH} />
+
+				{/* <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script> */}
 			</Head>
-			<body style={{minWidth:"310px"}}>
+			<body style={{ minWidth: "310px" }}>
 				<Main />
 				<NextScript />
 			</body>

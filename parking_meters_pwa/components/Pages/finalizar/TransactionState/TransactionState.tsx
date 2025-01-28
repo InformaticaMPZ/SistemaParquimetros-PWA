@@ -29,17 +29,14 @@ export const TransactionState = ({ tempInvoice }: TransactionStateProps) => {
 
     useEffect(() => {
         const fetchData = async () => {
-
             if (tempInvoice != null) {
-
                 let datos = await getPayment(tempInvoice);
-
                 if (datos.data.status === 'PENDIENTE') {
                     setTimeout(fetchData, 5000);
                 } else {
                     let losDatosFinales = datos.data;
                     setLosDatosFinalizar({
-                        infraction: losDatosFinales.infraction,
+                        infraction: losDatosFinales.ticket_number,
                         date: losDatosFinales.date.split("T")[0],
                         status: losDatosFinales.status,
                         amount: formatAmount(parseFloat(losDatosFinales.amount)),
@@ -51,7 +48,6 @@ export const TransactionState = ({ tempInvoice }: TransactionStateProps) => {
                         surname: losDatosFinales.surname,
                         description: losDatosFinales.description
                     });
-
                 }
             }
         }
@@ -74,9 +70,7 @@ export const TransactionState = ({ tempInvoice }: TransactionStateProps) => {
             <section>
                 <div>
                     <div className="mx-auto max-w-screen-md text-center mb-8 lg:mb-12">
-                        <h2 className="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
-                            Municipalidad de Pérez Zeledón
-                        </h2>
+                      
                         <p className="mb-5 font-light text-gray-700 sm:text-xl dark:text-gray-400">
                             A su correo se hará llegar un comprobante de esta transacción. Si desea resolver alguna inquietud, contáctenos al teléfono
                             <b>

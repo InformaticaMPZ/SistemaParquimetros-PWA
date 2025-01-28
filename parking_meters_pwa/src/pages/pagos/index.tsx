@@ -62,11 +62,6 @@ export default function PagosPage() {
         }
       }
     }
-
-
-    // if (isCorrectInfoPlate && isCorrectInfoTime) {
-    // 	router.push('/pagador');
-    // }
   };
 
   const onTabChange = () => {

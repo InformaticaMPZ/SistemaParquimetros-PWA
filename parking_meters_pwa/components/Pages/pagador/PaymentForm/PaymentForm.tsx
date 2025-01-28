@@ -12,7 +12,7 @@ import { usePushNotifications } from '@/hooks/usePushNotification';
 
 export const PaymentForm = () => {
   const { subscribeToPushNotifications } = usePushNotifications();
-  const { plateTypeList, parkingTime, setParkingTime, getParkingTime, loading,getClientIP } = useParkingMetersStore();
+  const { plateTypeList, parkingTime, setParkingTime, getParkingTime, loading, getClientIP, setPayment } = useParkingMetersStore();
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
@@ -56,7 +56,6 @@ export const PaymentForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const result = paymentFormSchema.safeParse(formData);
     if (!result.success) {
       const formattedErrors = result.error.format();
@@ -68,36 +67,45 @@ export const PaymentForm = () => {
       return;
     }
 
-    if ('serviceWorker' in navigator) {
-      try {
-        await navigator.serviceWorker.register(process.env.NODE_ENV === 'development' ? '/sw.js' : '/apps/app_pagos_tiempo/sw.js');
-        let responseSubscription = await subscribeToPushNotifications();
-        if (responseSubscription.success) {
-          setParkingTime({ subscription: responseSubscription.data });
-          const response = await getParkingTime();
-          if (!response.success) {
-            throw new Error(response.message);
+    if (parkingTime.ticketNumber === '') {
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register(process.env.NODE_ENV === 'development' ? '/sw.js' : '/apps/app_pagos_tiempo/sw.js');
+          let responseSubscription = await subscribeToPushNotifications();
+          if (responseSubscription.success) {
+            setParkingTime({ subscription: responseSubscription.data });
+            const response = await getParkingTime();
+            if (!response.success) {
+              throw new Error(response.message);
+            }
+            router.push(response.data);
+          } else {
+            throw new Error(responseSubscription.message);
           }
-          router.push(response.data);
-        } else {
-          throw new Error(responseSubscription.message);
+        } catch (error: any) {
+          setIsModalOpen(true);
+          setErrors(error.message);
         }
-      } catch (error:any) {
-        setIsModalOpen(true);
-        setErrors(error.message);
       }
+    } else {
+      const response = await setPayment();
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+      router.push(response.data.collector);
     }
   };
 
   const selectedPlateType = plateTypeList
-    .filter(plateType => plateType.id === parkingTime.plateTypeId).map((plateClass: any) => {
-      const filteredPlateDetails = plateClass.plate_details.filter((detail: any) => detail.id === parkingTime.plateDetailId);
+    .filter((plateType: any) => plateType.Id === parkingTime.plateTypeId).map((plateClass: any) => {
+      const filteredPlateDetail = plateClass.PlateDetails.find(
+        (detail: any) => detail.Id === parkingTime.plateDetailId
+      ) || plateClass.PlateDetails[0];
       return {
         ...plateClass,
-        plate_details: filteredPlateDetails
+        PlateDetails: filteredPlateDetail
       };
-    })
-    .filter(item => item.plate_details.length > 0)[0];
+    })[0];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5">

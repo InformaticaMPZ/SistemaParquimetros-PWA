@@ -18,13 +18,18 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, cors);
-
   if (req.method === 'GET') {
+    const sessionId = req.headers['credential'];
+
+    if (!sessionId) {
+      throw new Error(`Permiso denegado, usuario no autenticado`);
+    }
     try {
       const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/get_parking_rate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Cookie': `session_id=${sessionId}`,
         },
         body: JSON.stringify({ "params": "" }),
       });

@@ -11,9 +11,12 @@ export const paymentFormSchema = z.object({
     })
     .refine(val => !val.includes(' '), {
       message: "La cédula no debe contener espacios en blanco",
-    }),
+    }).refine(val => (val.startsWith("0") || val.startsWith("3")), {
+      message: "Digite la cédula sin guiones ni espacios, pero con todos los ceros, ejemplos: Persona Física: 0107770777 (Recordar también agregar cero al inicio) Persona Jurídica: 3811181111 (No es necesario el cero al inicio)",
+    })
+    ,
   name: z.string().min(1, { message: "El nombre es requerido" }),
-  lastName: z.string().min(1, { message: "Los apellidos son requeridos" }),
+  lastName: z.string().optional(),
   email: z.string().email({ message: "El correo electrónico no es válido" })
   .refine(val => !val.includes(' '), {
     message: "El correo electrónico no debe contener espacios en blanco",
@@ -33,11 +36,12 @@ export const paymentFormSchema = z.object({
     message: 'Debes aceptar los términos y condiciones',
   }),
 }).superRefine((data, ctx) => {
-  if (!data.id.startsWith('0')) {
+  if (data.id.startsWith('0') && (!data.lastName || data.lastName.trim() === "")) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "La cédula debe comenzar con 0",
-      path: ['id'],
+      message: "Los apellidos son requeridos",
+      path: ['lastName'],
     });
+    
   }
 });

@@ -1,3 +1,4 @@
+import useParkingMetersStore from '@/store/useParkingMeters.store';
 import { Page } from '../../components/General/Page';
 import { Section } from '../../components/General/Section';
 import Head from 'next/head';
@@ -6,25 +7,33 @@ import { useEffect } from 'react';
 
 const Index = () => {
   const router = useRouter();
-
+  const { getStartSession, getActive } = useParkingMetersStore();
   useEffect(() => {
 
-    const redirectToConsulta = () => {
+    const redirectToConsulta = async () => {
       if ('Notification' in window) {
         Notification.requestPermission();
       }
-      
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const { pathname } = router;
-        if (pathname === '/') {
-          const storedPlateInfo = localStorage.getItem("plateInfo");
-          if (!storedPlateInfo) {
-            router.push('/garaje');
-          } else {
-            router.push('/compras');
+
+
+      await getStartSession();
+      let isActive = await getActive();
+      if (isActive.data.Value === "true") {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const { pathname } = router;
+          if (pathname === '/') {
+            const storedPlateInfo = localStorage.getItem("plateInfo");
+            if (!storedPlateInfo) {
+              router.push('/garaje');
+            } else {
+              router.push('/compras');
+            }
           }
         }
+      }else{
+        router.push('/apagado');
       }
+
     };
     redirectToConsulta();
   }, [router]);

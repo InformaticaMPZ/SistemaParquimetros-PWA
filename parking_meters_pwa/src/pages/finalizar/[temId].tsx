@@ -18,7 +18,7 @@ const Finalizar = () => {
 
   return (
     <>
-      <Page>
+      <Page haveBottoms={false}>
         {loading ? <Loading /> : <TransactionState tempInvoice={temId} />}
       </Page>
     </>

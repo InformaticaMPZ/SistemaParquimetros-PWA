@@ -4,6 +4,8 @@ import { FaAngleDown, FaAngleUp, FaCheckCircle, FaRegArrowAltCircleRight } from 
 import { borderStatePending, borderstateSuccess, headerTablePayments } from '@/utils/constData';
 import { formatAmount } from '@/utils/converter';
 import { CustomCard } from 'components/General/CustomCard';
+import { useRouter } from 'next/router';
+import useParkingMetersStore from '@/store/useParkingMeters.store';
 
 interface TableResultProps {
     infractionList: Array<any>;
@@ -12,6 +14,18 @@ interface TableResultProps {
 }
 
 export const TableResult: React.FC<TableResultProps> = ({ infractionList, activeRow, setActiveRow }) => {
+    const { setParkingTime, resetParkingTime } = useParkingMetersStore();
+    const router = useRouter();
+
+    const handleTimeInformationSubmit = (item:any) => {
+        console.log(item);
+        resetParkingTime();
+        setParkingTime({plateTypeId: item.plate_type, plateNumber: item.plate_number, plateDetailId: item.plate_detail,amount:item.infraction_amount,ticketNumber:item.ticket_number});
+
+        if (true) {
+            router.push('/pagador');
+        }
+    };
     return (
         <CustomCard title='Resultados de la Búsqueda' classNameCard='mb-4'>
             <div className="relative overflow-x-auto shadow-md rounded-b-xl">
@@ -34,7 +48,7 @@ export const TableResult: React.FC<TableResultProps> = ({ infractionList, active
                             infractionList.map((row, index) => (
                                 <React.Fragment key={index}>
                                     <tr
-                                        className={`border-t dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer ${row.infraction_state_id[1] === 'PENDIENTE' ? borderStatePending : borderstateSuccess}`}
+                                        className={`border-t dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer ${row.infraction_state_description === 'PENDIENTE' ? borderStatePending : borderstateSuccess}`}
                                         onClick={() => setActiveRow(activeRow === index ? null : index)}
                                     >
                                         <td className="px-6 py-4 dark:text-white">
@@ -46,18 +60,19 @@ export const TableResult: React.FC<TableResultProps> = ({ infractionList, active
                                                         <FaAngleDown className="mr-1" />
                                                     )}
                                                 </div>
-                                                <span>{row.plate_type_id[1] + '-' + row.plate_number}</span>
+                                                <span>{row.plate_type_description + '-' + row.plate_number}</span>
                                             </div>
                                         </td>
                                         <td className="hidden md:table-cell px-6 py-4">{row.ticket_number}</td>
                                         <td className="hidden md:table-cell px-6 py-4">{row.registration_date}</td>
-                                        <td className="hidden md:table-cell px-6 py-4">{formatAmount(parseFloat(row.infraction_price_id[1]) + row.surcharge)}</td>
+                                        <td className="hidden md:table-cell px-6 py-4">{formatAmount(parseFloat(row.infraction_amount) + row.surcharge)}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex justify-between">
-                                                {row.infraction_state_id[1] === 'PENDIENTE' ? (
+                                                {row.infraction_state_description === 'PENDIENTE' ? (
                                                     <button
                                                         type="button"
                                                         className='w-full flex flex-row p-3 justify-center items-center focus:outline-none text-white bg-red-700 hover:bg-red-500 focus:ring-4 focus:ring-red-300 font-medium rounded-lg dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900'
+                                                        onClick={() => handleTimeInformationSubmit(row)}
                                                     >
                                                         <p className='mr-1'>{'PAGAR'}</p>
                                                         <FaRegArrowAltCircleRight className='ms-1' size={20} />
@@ -67,7 +82,7 @@ export const TableResult: React.FC<TableResultProps> = ({ infractionList, active
                                                         type="button"
                                                         className='w-full flex flex-row p-2 justify-center items-center text-green-700 border border-green-700 font-medium rounded-lg text-center dark:border-green-500 dark:text-green-500'
                                                     >
-                                                        <p className='mr-1'>{row.infraction_state_id[1]}</p>
+                                                        <p className='mr-1'>{row.infraction_state_description}</p>
                                                         <FaCheckCircle className='ms-1' size={18} />
                                                     </button>
                                                 )}
@@ -75,12 +90,12 @@ export const TableResult: React.FC<TableResultProps> = ({ infractionList, active
                                         </td>
                                     </tr>
                                     {activeRow === index && (
-                                        <tr className={`md:hidden table-row bg-gray-50 dark:text-white dark:bg-gray-700 ${row.infraction_state_id[1] === 'PENDIENTE' ? borderStatePending : borderstateSuccess}`}>
+                                        <tr className={`md:hidden table-row bg-gray-50 dark:text-white dark:bg-gray-700 ${row.infraction_state_description === 'PENDIENTE' ? borderStatePending : borderstateSuccess}`}>
                                             <td colSpan={6}>
                                                 <div className="px-6 py-4">
                                                     <div><strong>Boleta:</strong> {row.ticket_number}</div>
                                                     <div><strong>Fecha:</strong> {row.registration_date}</div>
-                                                    <div><strong>Monto:</strong> {formatAmount(parseFloat(row.infraction_price_id[1]) + row.surcharge)}</div>
+                                                    <div><strong>Monto:</strong> {formatAmount(parseFloat(row.infraction_amount) + row.surcharge)}</div>
                                                 </div>
                                             </td>
                                         </tr>

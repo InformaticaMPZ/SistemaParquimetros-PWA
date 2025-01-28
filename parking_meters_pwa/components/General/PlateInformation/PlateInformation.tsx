@@ -51,7 +51,6 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
 
     const handleSelectPlateType = (item: any) => {
         setSelectedPlateType(item);
-
         setParkingTime({
             plateTypeId: item ? item.id : 0
         });
@@ -75,10 +74,9 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
         };
 
         if (descriptionPlate && selectedPlateType == null) {
-            let searchPlateType = plateTypeList.find((plate) => plate.description === descriptionPlate);
+            let searchPlateType = plateTypeList.find((plate:any) => plate.Description === descriptionPlate);
             formData.plateType = searchPlateType;
         }
-
 
         const validation = PlateInformationSchema.safeParse(formData);
 
@@ -91,7 +89,7 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
             return false;
         }
         setParkingTime({
-            plateTypeId: formData.plateType.id,
+            plateTypeId: formData.plateType.Id,
             plateNumber: formData.vehiclePlate
         });
         setSelectedPlateType(null);
@@ -158,7 +156,7 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
                         key={newKey}
                         filtered={plateDescription}
                         items={plateTypeList}
-                        filterLabel="description"
+                        filterLabel="Description"
                         label="Tipo de Placa"
                         onSelect={handleSelectPlateType}
                         onClear={handleClearType}
@@ -169,12 +167,12 @@ export const PlateInformation = forwardRef(({ plateSelected, descriptionPlate, r
                                 key={type.id}
                                 type="button"
                                 onClick={() => {
-                                    setPlateDescription(type.description);
+                                    setPlateDescription(type.Description);
                                 }}
                                 className="inline-flex items-center mr-1 px-1 py-1 text-[10px] font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white"
                             >
                                 <FaStar color="orange" style={{ stroke: 'gray', strokeWidth: 50, marginRight: 3 }} />
-                                {type.description}
+                                {type.Description}
                             </button>
                         ))}
                     </div>

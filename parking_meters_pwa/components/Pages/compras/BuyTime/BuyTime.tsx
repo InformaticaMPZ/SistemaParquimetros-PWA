@@ -31,7 +31,6 @@ export const BuyTime = () => {
 	}, []);
 
 	const handleTimeInformationSubmit = () => {
-
 		let isCorrectInfoPlate = false;
 		let isCorrectInfoTime = false;
 		if (plateInfoRef.current) {
