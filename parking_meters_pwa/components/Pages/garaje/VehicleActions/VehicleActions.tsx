@@ -40,10 +40,10 @@ export const VehicleActions = ({
         }
     };
 
-    const handleEditVehicle = (info: PlateInfo) => {
-        const updatedPlateInfo = plateInfo.map((item) =>
-            item.plateNumber === info.plateNumber && item.plateType?.id === info.plateType?.id
-                ? { ...item, plateNumber: parkingTime.plateNumber, plateType: plateTypeList.find((type) => type.id === parkingTime.plateTypeId) }
+    const handleEditVehicle = (info: any) => {
+        const updatedPlateInfo = plateInfo.map((item:any) =>
+            item.plateNumber === info.plateNumber && item.plateType?.Id === info.plateType?.Id
+                ? { ...item, plateNumber: parkingTime.plateNumber, plateType: plateTypeList.find((type:any) => type.Id === parkingTime.plateTypeId) }
                 : item
         );
 
@@ -56,9 +56,10 @@ export const VehicleActions = ({
         });
     };
 
-    const handleDeleteVehicle = (plateSelected: PlateInfo) => {
+    const handleDeleteVehicle = (plateSelected: any) => {
+
         const updatedPlateInfo = plateInfo.filter(
-            (info) => info.plateNumber !== plateSelected.plateNumber || info.plateType?.id !== plateSelected.plateType?.id
+            (info:any) => info.plateNumber !== plateSelected.plateNumber || info.plateType?.Id !== plateSelected.plateType?.Id
         );
         const wasFavorite = plateSelected.favorite;
         if (wasFavorite) {

@@ -4,6 +4,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { es } from 'date-fns/locale/es';
 import { format } from 'date-fns';
+import { FaEdit } from 'react-icons/fa';
 
 interface CustomDatePickerProps {
     startDate: Date;
@@ -40,10 +41,11 @@ export const CustomDatePicker = ({ startDate, onChangeDate }: CustomDatePickerPr
                             Fecha
                         </label>
                         <button
-                            className="bg-blue-50 text-left border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="bg-blue-50 flex items-center justify-between border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             onClick={handleClickDate}
                         >
-                            {format(startDate, 'dd/MM/yyyy')}
+                            <span>{format(startDate, 'dd/MM/yyyy')}</span>
+                            <FaEdit className="w-4 h-4 text-gray-600 ml-2" />
                         </button>
                         {isOpenDate && (
                             <div className="flex justify-center mt-2">

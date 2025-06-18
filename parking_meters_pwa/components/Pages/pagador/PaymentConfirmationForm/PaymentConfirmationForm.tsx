@@ -6,6 +6,7 @@ import { Stepper } from '../Stepper';
 import { formatAmount } from '@/utils/converter';
 import { PaymentWarningMessage } from '../PaymentWarningMessage';
 import { ModalNotification } from 'components/General/ModalNotification';
+import { PaymentWalletMessage } from '../PaymentWallet';
 
 interface PaymentConfirmationFormProps {
   parkingTime: any;
@@ -29,10 +30,9 @@ export const PaymentConfirmationForm: React.FC<PaymentConfirmationFormProps> = (
   handleSubmit
 }) => {
   const router = useRouter();
-
   return (
     <form onSubmit={handleSubmit}>
-      <Stepper startTime={parkingTime.startTime} endTime={parkingTime.endTime} />
+      {!parkingTime.ticketNumber && <Stepper startTime={parkingTime.startTime} endTime={parkingTime.endTime} />}
 
       <h2 className="text-center text-2xl tracking-tight font-bold text-gray-900 dark:text-white border rounded-lg p-2 dark:bg-gray-700 bg-gray-200">
         Monto a cancelar:
@@ -41,8 +41,12 @@ export const PaymentConfirmationForm: React.FC<PaymentConfirmationFormProps> = (
         </span>
       </h2>
 
-      <div className="flex w-full mt-6">
+      <div className="flex items-center justify-center w-full mt-6">
         <PaymentWarningMessage />
+      </div>
+
+      <div className="flex items-center justify-center w-full mt-6">
+        <PaymentWalletMessage />
       </div>
 
       <div className="flex items-center justify-center mb-10 mt-4">
@@ -59,7 +63,7 @@ export const PaymentConfirmationForm: React.FC<PaymentConfirmationFormProps> = (
         <div>
           <label htmlFor="isTermsAccepted" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
             Acepto los &nbsp;
-            <Link href="/" className="text-blue-600 hover:underline dark:text-blue-500">Términos y Condiciones</Link>
+            <Link href="https://www.perezzeledon.go.cr/index.php/municipalidad/documentos-y-descargas/archivos-generales/informacion.html?download=18135:terminos-y-condiciones-para-la-cancelacion-de-boletas-de-parquimetros" className="text-blue-600 hover:underline dark:text-blue-500">Términos y Condiciones</Link>
           </label>
           {errors.isTermsAccepted && <div className="text-red-500 ml-2">{errors.isTermsAccepted._errors[0]}</div>}
         </div>

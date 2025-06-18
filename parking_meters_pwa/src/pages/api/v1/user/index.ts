@@ -1,8 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
 import CryptoJS from 'crypto-js';
+import getSessionId from '@/utils/sessionManager';
 
-const cors = Cors({ methods: ['POST', 'PUT', 'HEAD'] });
+const cors = Cors({
+  methods: ['POST', 'PUT', 'HEAD','OPTIONS'],
+  origin: (origin, callback) => {
+    const allowedOrigins = [process.env.MPZ_DOMAIN, process.env.MPZ_DOMAIN + "/"];
+    if (!origin || (allowedOrigins && (allowedOrigins.includes(origin) || allowedOrigins.includes(origin)))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+});
 
 const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: Function) =>
   new Promise((resolve, reject) => {
@@ -38,8 +49,10 @@ const fetchWithAuth = async (
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, cors);
-
-  const { ODOO_DATABASE, ODOO_REQUEST,NEXT_PUBLIC_SESSION_KEY } = process.env;
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  const { ODOO_DATABASE, ODOO_REQUEST, NEXT_PUBLIC_SESSION_KEY } = process.env;
   if (!ODOO_REQUEST || !ODOO_DATABASE) {
     return handleError(res, new Error('Faltan configuraciones en las variables de entorno'), 500);
   }
@@ -47,20 +60,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (req.method === 'POST') {
       const { user, password } = req.body;
-      
+
       const [iv, encrypted] = password.split(':');
 
       if (!NEXT_PUBLIC_SESSION_KEY) {
         throw new Error('Encryption key is not defined');
       }
       const decrypted = CryptoJS.AES.decrypt(encrypted, CryptoJS.enc.Utf8.parse(NEXT_PUBLIC_SESSION_KEY), {
-          iv: CryptoJS.enc.Hex.parse(iv),
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7,
+        iv: CryptoJS.enc.Hex.parse(iv),
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
       }).toString(CryptoJS.enc.Utf8);
-     
-      
-      
+
       if (!user || !decrypted) {
         return handleError(res, new Error('Usuario y contraseña son obligatorios'), 400);
       }
@@ -68,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const authResponse = await fetch(`${ODOO_REQUEST}/web/session/authenticate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ params: { db: ODOO_DATABASE, login: user, password: decrypted} }),
+        body: JSON.stringify({ params: { db: ODOO_DATABASE, login: user, password: decrypted } }),
       });
 
       const setCookieHeader = authResponse.headers.get('set-cookie');
@@ -92,11 +103,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
     } else if (req.method === 'PUT') {
-      const sessionId = req.headers.cookie;
-      if (!sessionId) throw new Error('Usuario no autenticado');
+      let sessionId = req.headers['credential'];
 
-      const data = await fetchWithAuth(`${ODOO_REQUEST}/api/v1/update_officer`, 'PUT', sessionId);
-      return res.status(200).json({ success: true, message: data.result.message });
+      if (!sessionId) {
+        const nuevaSession = await getSessionId(true);
+        sessionId = nuevaSession;
+      }
+
+      if (!sessionId) {
+        throw new Error(`Permiso denegado, usuario no autenticado`);
+      }
+
+      const rangeResponse = await fetch(`${ODOO_REQUEST}/api/v1/update_officer`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': `session_id=${sessionId}`,
+        },
+        body: JSON.stringify({ params: {} }),
+      });
+
+      return res.status(200).json({ success: true, message: rangeResponse.ok });
     } else {
       return res.status(405).json({ message: 'Method Not Allowed' });
     }

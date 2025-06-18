@@ -7,7 +7,7 @@ import { CustomButton } from "components/General/CustomButton";
 interface VehicleFormModalProps {
     isOpen: boolean;
     plateSelected: any;
-    setPlateSelected:any;
+    setPlateSelected: any;
     handleAddVehicle: () => void;
     handleDeleteVehicle: () => void;
     handleEditVehicle: (info: PlateInfo) => void;
@@ -26,11 +26,22 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
     plateInfoRef,
 }) => {
     const setVehicule = () => {
+        let isCorrectInfoPlate = false;
+
+        if (plateInfoRef.current) {
+            isCorrectInfoPlate = plateInfoRef.current.handleSubmitPlateInformation();
+        }
         if (plateSelected) {
-            handleEditVehicle(plateSelected)
+
+
+            if (isCorrectInfoPlate) {
+                handleEditVehicle(plateSelected)
+            }
         }
         else {
-            handleAddVehicle()
+            if (isCorrectInfoPlate) {
+                handleAddVehicle()
+            }
         }
     };
 
@@ -40,7 +51,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
                 <div className="relative bg-white rounded-xl shadow dark:bg-gray-700">
                     <CustomButton
                         color='gray'
-                        onClick={() => {setIsOpen(false); setPlateSelected(null);}}
+                        onClick={() => { setIsOpen(false); setPlateSelected(null); }}
                         Icon={FaTimes}
                         className="absolute top-3 right-2.5 top-6 px-0 py-0 me-0"
                         iconClassName="mr-0"
@@ -49,7 +60,7 @@ export const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
                         <PlateInformation
                             ref={plateInfoRef}
                             isCard={true}
-                            descriptionPlate={plateSelected?.plateType?.description || ""}
+                            descriptionPlate={plateSelected?.plateType?.Description || ""}
                             plateSelected={plateSelected?.plateNumber || ""}
                         />
                         <div className="px-2 pt-4 pb-1 flex items-center justify-end">

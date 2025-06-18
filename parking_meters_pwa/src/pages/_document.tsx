@@ -5,7 +5,7 @@ export default function Document() {
 		<Html lang='en'>
 			<Head>
 				<meta charSet='utf-8' />
-				<link rel='icon' type='image/png' href='../images/escudo.png' />
+				<link rel='icon' type='image/png' href={process.env.NEXT_PUBLIC_ICON_ESCUDO} />
 				<meta
 					name='theme-color'
 					content='#18181b'

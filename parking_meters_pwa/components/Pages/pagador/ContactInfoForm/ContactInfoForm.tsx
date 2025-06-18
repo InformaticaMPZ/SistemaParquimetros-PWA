@@ -4,7 +4,6 @@ interface ContactInfoProps {
     formData: { email: string; phone: string; isTermsAccepted: boolean };
     errors: any;
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     inputRefs: {
         email: React.RefObject<HTMLInputElement>;
         phone: React.RefObject<HTMLInputElement>;
@@ -31,7 +30,7 @@ export const ContactInfoForm: React.FC<ContactInfoProps> = ({ formData, errors, 
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     placeholder="correo@mail.com"
                 />
-                {errors.email && <div className="text-red-500">{errors.email._errors[0]}</div>}
+                {errors.email && <div className="text-red-500">{errors.email}</div>}
             </div>
 
             <div className='col-span-3'>
@@ -51,7 +50,7 @@ export const ContactInfoForm: React.FC<ContactInfoProps> = ({ formData, errors, 
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     placeholder="88889999"
                 />
-                {errors.phone && <div className="text-red-500">{errors.phone._errors[0]}</div>}
+                {errors.phone && <div className="text-red-500">{errors.phone}</div>}
             </div>
         </div>
     </div>

@@ -1,8 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
+import getSessionId from '@/utils/sessionManager';
 
 const cors = Cors({
-  methods: ['POST', 'HEAD'],
+  methods: ['POST', 'HEAD', 'OPTIONS'],
+  origin: (origin, callback) => {
+    const allowedOrigins = [process.env.MPZ_DOMAIN, process.env.MPZ_DOMAIN + "/"];
+    if (!origin || (allowedOrigins && (allowedOrigins.includes(origin) || allowedOrigins.includes(origin)))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 });
 
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
@@ -17,16 +26,32 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await runMiddleware(req, res, cors);
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
   try {
-    const { plateNumber, plateTypeId } = req.body;
+    let body = req.body;
 
-    await runMiddleware(req, res, cors);
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch (error) {
+        return res.status(400).json({ error: "Invalid JSON" });
+      }
+    }
+
+    const { plateNumber, plateTypeId } = body;
     const { ODOO_REQUEST } = process.env;
-    const sessionId = req.headers['credential'];
+    let sessionId = req.headers['credential'];
+    if (!sessionId) {
+      const nuevaSession = await getSessionId(true);
+      sessionId = nuevaSession;
+    }
 
     if (!sessionId) {
       throw new Error(`Permiso denegado, usuario no autenticado`);
@@ -38,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Content-Type': 'application/json',
         'Cookie': `session_id=${sessionId}`,
       },
-      body: JSON.stringify({ params: {"plate_number": plateNumber, "plate_type_id":plateTypeId} }),
+      body: JSON.stringify({ params: { "plate_number": plateNumber, "plate_type_id": plateTypeId } }),
     });
 
     if (!timeResponse.ok) {
@@ -53,7 +78,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({
       success: true,
-      data: {"minutes": dataResponse.result.data.remaining_minutes, "seconds": dataResponse.result.data.remaining_seconds},
+      data: { "minutes": dataResponse.result.data.remaining_minutes, 
+        "seconds": dataResponse.result.data.remaining_seconds, 
+        "nextTime": dataResponse.result.data.next_start_time,
+        "allTime": dataResponse.result.data.all_to_day_records,
+       },
     });
   } catch (error: any) {
     res.status(500).json({

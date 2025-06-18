@@ -13,17 +13,16 @@ export const BuyTime = () => {
 	const [plateDescription, setPlateDescription] = useState("");
 	const [plateNumber, setPlateNumber] = useState("");
 	const router = useRouter();
-
+	
 	useEffect(() => {
 		const storedPlateInfo = localStorage.getItem("plateInfo");
-
 		if (storedPlateInfo) {
 			const parsedPlateInfo = JSON.parse(storedPlateInfo);
 			if (parsedPlateInfo.length > 0) {
 				for (const plateInfo of parsedPlateInfo) {
 					if (plateInfo.favorite == true) {
 						setPlateNumber(plateInfo.plateNumber);
-						setPlateDescription(plateInfo.plateType?.description);
+						setPlateDescription(plateInfo.plateType?.Description);
 					}
 				}
 			}
@@ -31,6 +30,7 @@ export const BuyTime = () => {
 	}, []);
 
 	const handleTimeInformationSubmit = () => {
+	
 		let isCorrectInfoPlate = false;
 		let isCorrectInfoTime = false;
 		if (plateInfoRef.current) {

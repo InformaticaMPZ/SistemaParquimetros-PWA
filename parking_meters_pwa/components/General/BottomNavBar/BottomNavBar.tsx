@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { FaRegClock, FaRegMoneyBillAlt, FaWarehouse } from 'react-icons/fa'
+import { FaRegClock, FaRegMoneyBillAlt, FaShoppingBag, FaWarehouse } from 'react-icons/fa'
 
 const BottomNavBar = () => {
 	const router = useRouter()
@@ -37,6 +37,13 @@ const links = [
 	{
 		label: 'Comprar',
 		href: '/compras',
+		icon: (
+			<FaShoppingBag className='w-18 h-18'/>
+		),
+	},
+	{
+		label: 'Tiempo',
+		href: '/tiempo',
 		icon: (
 			<FaRegClock className='w-18 h-18'/>
 		),

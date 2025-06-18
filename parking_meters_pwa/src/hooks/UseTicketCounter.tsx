@@ -7,7 +7,6 @@ export const useTicketCounter = (startDate: Date) => {
   const [rateIds, setRateIds] = useState<number[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const closeModal = () => setIsModalOpen(false);
 
   const countOccurrences = (rateIds: number[], newId: number) => {
     return rateIds.filter(rateId => rateId === newId).length;
@@ -41,21 +40,21 @@ export const useTicketCounter = (startDate: Date) => {
   const increment = (newId: number) => {
     const rateItem = parkingRateList.find(item => item.id === newId);
     if (!rateItem) return;
-    
+
     const newTotalHours = getTotalHours() + rateItem.hours;
     const remainingHours = getTimeRemaining();
-
-    if (remainingHours > 0 && newTotalHours <= remainingHours) {
-      setRateIds(prevIds => {
-        const updatedRateIds = [...prevIds, newId];
-        const endTime = calculateEndTime(newTotalHours, startDate);
-        setParkingTime({
-          parkingRateId: updatedRateIds,
-          endTime: endTime
-        });
-        return updatedRateIds;
+ 
+    setRateIds(prevIds => {
+      const updatedRateIds = [...prevIds, newId];
+      const endTime = calculateEndTime(newTotalHours, startDate);
+      setParkingTime({
+        parkingRateId: updatedRateIds,
+        endTime: endTime
       });
-    } else {
+      return updatedRateIds;
+    });
+
+    if ( newTotalHours > remainingHours) {
       setIsModalOpen(true);
     }
   };
@@ -66,11 +65,16 @@ export const useTicketCounter = (startDate: Date) => {
       const newRateIds = index !== -1
         ? [...prevIds.slice(0, index), ...prevIds.slice(index + 1)]
         : prevIds;
-        
+
       const newTotalHours = getTotalHours() - (parkingRateList.find(item => item.id === idToRemove)?.hours || 0);
       const endTime = calculateEndTime(newTotalHours, startDate);
       setParkingTime({ parkingRateId: newRateIds, endTime: endTime });
-      
+      const remainingHours = getTimeRemaining();
+ 
+      if ( getTotalHours() <= remainingHours) {
+        setIsModalOpen(false);
+      }
+
       return newRateIds;
     });
   };
@@ -83,6 +87,5 @@ export const useTicketCounter = (startDate: Date) => {
     getTotalPrice,
     increment,
     decrement,
-    closeModal,
   };
 };

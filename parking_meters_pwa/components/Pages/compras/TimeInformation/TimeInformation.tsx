@@ -2,7 +2,7 @@
 import { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { es } from 'date-fns/locale/es';
-import { endOfDay, setHours, setMinutes, startOfDay } from 'date-fns';
+import { endOfDay, setHours, setMinutes, startOfDay, isAfter } from 'date-fns';
 import useParkingMetersStore from '@/store/useParkingMeters.store';
 import { TimeInformationSchema } from './TimeInformationSchema';
 import { CustomCard } from 'components/General/CustomCard';
@@ -11,7 +11,6 @@ import Loading from 'components/General/LoadingForm/LoadingForm';
 import { CustomDatePicker } from '../CustomDatePicker';
 import { CustomTimePicker } from '../CustomTimePicker';
 import { TicketCounter } from '../TicketCounter';
-
 
 const roundToNextFiveMinutes = (date: Date) => {
     const minutes = date.getMinutes();
@@ -26,8 +25,9 @@ export const TimeInformation = forwardRef((_, ref) => {
     const { setParkingTime, loading, parkingTime, getParkingRates } = useParkingMetersStore();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    const minTime = setHours(setMinutes(startOfDay(new Date()), 0), 7);
-    const maxTime = setHours(setMinutes(endOfDay(new Date()), 0), 17);
+    let toDay = new Date();
+    const [minTime, setMinTime] = useState(setHours(setMinutes(startOfDay(toDay), (roundToNextFiveMinutes(toDay).getMinutes() - 5)), toDay.getHours() > 7 ? toDay.getHours() : 7));
+    const [maxTime, setMaxTime] = useState(setHours(setMinutes(endOfDay(toDay), 0), 17));
 
     const handleSubmitTimeInformation = () => {
         const formData = {
@@ -59,16 +59,30 @@ export const TimeInformation = forwardRef((_, ref) => {
         getParkingRates();
     }, []);
 
+
     useImperativeHandle(ref, () => ({
         handleSubmitTimeInformation,
     }));
 
+    const handleSubmitDate = (date: Date) => {
+        setStartDate(date);
+
+        const onlyDate = startOfDay(date);
+        const todayOnlyDate = startOfDay(toDay);
+
+        if (isAfter(onlyDate, todayOnlyDate)) {
+            setMinTime(setHours(setMinutes(endOfDay(toDay), 0), 7));
+        } else {
+            setMinTime(setHours(setMinutes(startOfDay(toDay), (roundToNextFiveMinutes(toDay).getMinutes() - 5)), toDay.getHours() > 7 ? toDay.getHours() : 7));
+        }
+    };
     return (
+
         <div>
-            <CustomCard title='Selección de tiempo' classNameCard='mt-5' className='p-4'>
+            <CustomCard title='Selección de Tiempo' classNameCard='mt-5' className='p-4'>
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 w-full'>
                     <div>
-                        <CustomDatePicker startDate={startDate} onChangeDate={setStartDate} />
+                        <CustomDatePicker startDate={startDate} onChangeDate={handleSubmitDate} />
                     </div>
                     <div>
                         <CustomTimePicker

@@ -9,7 +9,8 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  scope: process.env.NODE_ENV === 'development' || currentIP === IP_API_PRODUCCION ? '/' : '/apps/app_pagos_tiempo/',
+  // scope:  '/', // api y local
+  scope: '/apps/parking/',
   sw: "sw.js",
   swSrc: 'public/custom-sw.js', 
 });
@@ -18,19 +19,24 @@ const isProd = process.env.NODE_ENV === 'production' && currentIP != IP_API_PROD
 
 module.exports = withPWA({
   reactStrictMode: true,
+  images: {
+    unoptimized: true,
+  },
   env: {
-    ODOO_HOST: process.env.ODOO_HOST,
-    ODOO_PORT: process.env.ODOO_PORT,
     ODOO_DATABASE: process.env.ODOO_DATABASE,
     ODOO_USERNAME: process.env.ODOO_USERNAME,
     ODOO_PASSWORD: process.env.ODOO_PASSWORD,
-    ODOO_PROTOCOL: process.env.ODOO_PROTOCOL,
     NEXT_API_REQUEST: process.env.NEXT_API_REQUEST,
+    MPZ_DOMAIN: process.env.MPZ_DOMAIN,
+    NEXT_PUBLIC_MANIFEST_PATH: process.env.NEXT_PUBLIC_MANIFEST_PATH,
+    NEXT_PUBLIC_ICON_ESCUDO:process.env.NEXT_PUBLIC_ICON_ESCUDO,
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY:process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   },
+  // PARA CREAR ARCHIVOS DEL SITIO FRONT SE OCUPAN ESTOS
   ...(isProd && {
     output: 'export',
-    basePath: '/apps/app_pagos_tiempo',
-    assetPrefix: '/apps/app_pagos_tiempo/',
+    basePath: '/apps/parking',
+    assetPrefix: '/apps/parking/',
   }),
   trailingSlash: true,
 });

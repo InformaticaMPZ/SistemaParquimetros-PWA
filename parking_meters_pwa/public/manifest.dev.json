@@ -1,6 +1,6 @@
 {
-  "name": "Multas y Tiempo de Parquímetro MPZ",
-  "short_name": "MIP",
+  "name": "Parquímetro MPZ",
+  "short_name": "PARKING",
   "description": "Sitio para comprar tiempo en línea y pagar multas de estacionamiento.",
   "icons": [
     {

@@ -1,8 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
+import getSessionId from '@/utils/sessionManager';
 
 const cors = Cors({
-  methods: ['POST', 'HEAD'],
+  methods: ['POST', 'HEAD','OPTIONS'],
+  origin: (origin, callback) => {
+    const allowedOrigins =[ process.env.MPZ_DOMAIN, process.env.MPZ_DOMAIN+"/"];
+    if (!origin || (allowedOrigins && (allowedOrigins.includes(origin) || allowedOrigins.includes(origin)))) {
+        callback(null, true);
+    } else {
+        callback(new Error('Not allowed by CORS'));
+    }
+}
 });
 
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
@@ -17,18 +26,22 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await runMiddleware(req, res, cors);
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
   try {
-    await runMiddleware(req, res, cors);
-    const { ODOO_REQUEST } = process.env;
-    const sessionId = req.headers['credential'];
-
+    let sessionId = req.headers['credential'];
     if (!sessionId) {
-      throw new Error(`Permiso denegado, usuario no autenticado`);
+      const nuevaSession = await getSessionId(true);
+      sessionId = nuevaSession;
     }
+    
+    const { ODOO_REQUEST } = process.env;
 
     const colorResponse = await fetch(`${ODOO_REQUEST}/api/v1/colors`, {
       method: 'POST',

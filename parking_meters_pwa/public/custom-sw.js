@@ -1,7 +1,7 @@
 import { precacheAndRoute } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
 
-const baseUrl = process.env.NODE_ENV === 'development' ? '' : '/apps/app_pagos_tiempo';
+const baseUrl = process.env.NODE_ENV === 'development' ? '' : '/apps/parking';
 
 const updatedManifest = (self.__WB_MANIFEST || []).map((entry) => {
   if (entry.url.includes('/sw.js')) { 

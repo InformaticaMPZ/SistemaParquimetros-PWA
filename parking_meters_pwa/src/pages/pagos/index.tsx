@@ -1,17 +1,17 @@
-import useParkingMetersStore from '@/store/useParkingMeters.store';
-import { CustomButton } from 'components/General/CustomButton';
-import { CustomCard } from 'components/General/CustomCard';
-import { CustomTab } from 'components/General/CustomTab';
-import { Page } from 'components/General/Page';
-import { PlateInformation } from 'components/General/PlateInformation';
-import { SearchTicket } from 'components/Pages/pagos/SearchTicket';
-import { TableResult } from 'components/Pages/pagos/TableResult';
+import useParkingMetersStore from "@/store/useParkingMeters.store";
+import { CustomButton } from "components/General/CustomButton";
+import { CustomCard } from "components/General/CustomCard";
+import { CustomTab } from "components/General/CustomTab";
+import { Page } from "components/General/Page";
+import { PlateInformation } from "components/General/PlateInformation";
+import { SearchTicket } from "components/Pages/pagos/SearchTicket";
+import { TableResult } from "components/Pages/pagos/TableResult";
+import React, { useEffect, useRef, useState } from "react";
+import { FaFileAlt, FaParking, FaSearch, FaStar } from "react-icons/fa";
+import withAuthRedirect from "../hoc";
 
-import React, { useEffect } from 'react';
-import { useRef, useState } from 'react';
-import { FaFileAlt, FaParking, FaSearch, FaStar } from 'react-icons/fa';
 
-export default function PagosPage() {
+function PagosPage() {
   const { getInfractions, resetParkingTime } = useParkingMetersStore();
   const plateInfoRef = useRef<{ handleSubmitPlateInformation: () => boolean }>(null);
   const searchTicketRef = useRef<{ handleSubmitSearchTicket: () => boolean }>(null);
@@ -30,14 +30,14 @@ export default function PagosPage() {
         for (const plateInfo of parsedPlateInfo) {
           if (plateInfo.favorite == true) {
             setPlateNumber(plateInfo.plateNumber);
-            setPlateDescription(plateInfo.plateType?.description);
+            setPlateDescription(plateInfo.plateType?.Description);
           }
         }
       }
     }
   }, []);
-  const handleTimeInformationSubmit = async () => {
 
+  const handleTimeInformationSubmit = async () => {
     let isCorrectInfoPlate = false;
     let isTikectSearch = false;
 
@@ -67,21 +67,27 @@ export default function PagosPage() {
   const onTabChange = () => {
     resetParkingTime();
     setIsRequest(false);
-  }
+  };
 
   const tabs = [
-    { label: 'Favorito', icon: <FaStar color='orange' size={19} /> },
-    { label: 'Por Placa', icon: <FaParking color='orange' size={19} /> },
-    { label: 'Por Boleta', icon: <FaFileAlt color='orange' size={19} /> },
+    { label: "Favorito", icon: <FaStar color="orange" size={19} /> },
+    { label: "Por Placa", icon: <FaParking color="orange" size={19} /> },
+    { label: "Por Boleta", icon: <FaFileAlt color="orange" size={19} /> },
   ];
 
   return (
     <div>
       <Page>
-        <CustomCard title='Pago de Infracciones' className='m-4'>
-          <CustomTab tabs={tabs} onTabChange={onTabChange} >
+        <CustomCard title="Pago de Infracciones" className="m-4">
+          <CustomTab tabs={tabs} onTabChange={onTabChange}>
             <div>
-              <PlateInformation key={`tab-${1}`} ref={plateInfoRef} readOnly={true} plateSelected={plateNumber} descriptionPlate={plateDescription} />
+              <PlateInformation
+                key={`tab-${1}`}
+                ref={plateInfoRef}
+                readOnly={true}
+                plateSelected={plateNumber}
+                descriptionPlate={plateDescription}
+              />
             </div>
             <div>
               <PlateInformation key={`tab-${2}`} ref={plateInfoRef} />
@@ -91,7 +97,13 @@ export default function PagosPage() {
             </div>
           </CustomTab>
           <div className="flex w-full justify-end my-1">
-            <CustomButton onClick={handleTimeInformationSubmit} color={'blue'} Icon={FaSearch} actionButton='Consultar' className='px-6 py-2.5 me-2 ms-4 mb-4' />
+            <CustomButton
+              onClick={handleTimeInformationSubmit}
+              color={"blue"}
+              Icon={FaSearch}
+              actionButton="Consultar"
+              className="px-6 py-2.5 me-2 ms-4 mb-4"
+            />
           </div>
         </CustomCard>
         {isRequest && <TableResult infractionList={infractionList} activeRow={activeRow} setActiveRow={setActiveRow} />}
@@ -99,3 +111,5 @@ export default function PagosPage() {
     </div>
   );
 }
+
+export default withAuthRedirect(PagosPage);

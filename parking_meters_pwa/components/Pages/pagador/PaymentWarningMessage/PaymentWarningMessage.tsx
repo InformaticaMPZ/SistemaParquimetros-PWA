@@ -1,6 +1,6 @@
 import React from "react";
 import { RiErrorWarningLine } from "react-icons/ri";
-
+import Image from 'next/image'
 export const PaymentWarningMessage = () => {
   return (
     <div
@@ -28,8 +28,8 @@ export const PaymentWarningMessage = () => {
       </div>
 
       <div className="flex justify-center flex-wrap gap-4">
-        <img src="../images/tarjetas.png" width="100" height="150" alt="PlacetoPay" />
-        <img src="../images/placetopay.svg" width="100" height="150" alt="PlacetoPay" />
+        <Image src="../images/tarjetas.png" width="100" height="150" alt="PlacetoPay" />
+        <Image src="../images/placetopay.svg" width="100" height="150" alt="PlacetoPay" />
       </div>
     </div>
   );

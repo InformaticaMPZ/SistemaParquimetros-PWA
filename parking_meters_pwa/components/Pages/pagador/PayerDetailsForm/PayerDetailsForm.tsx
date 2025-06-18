@@ -1,40 +1,65 @@
 import React, { useState } from 'react';
 
 interface PayerDetailsProps {
-  formData: { id: string; name: string; lastName: string };
+  formData: { id: string; idType: string; name: string; lastName: string };
   errors: any;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => void;
   inputRefs: {
     id: React.RefObject<HTMLInputElement>;
+    idType: React.RefObject<HTMLInputElement>;
     name: React.RefObject<HTMLInputElement>;
     lastName: React.RefObject<HTMLInputElement>;
   };
 }
 
-export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors, handleInputChange, inputRefs }) => {
-  const [isLastNameVisible, setIsLastNameVisible] = useState(true);
+export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({
+  formData,
+  errors,
+  handleInputChange,
+  inputRefs,
+}) => {
+  const [documentType, setDocumentType] = useState<'fisica' | 'juridica' | 'pasaporte'>('fisica');
 
-  const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange(e); 
-    const newValue = e.target.value;
-
-    if (newValue.startsWith('0')) {
-      setIsLastNameVisible(true);
-    } else if (newValue.startsWith('3')) {
-      setIsLastNameVisible(false);
-    }else{
-      setIsLastNameVisible(true);
-    }
+  const handleDocumentTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value as 'fisica' | 'juridica' | 'pasaporte';
+    setDocumentType(value);
+    handleInputChange(e);
   };
 
   return (
     <div>
+      {/* Select tipo de documento */}
+      <div className="mb-4">
+        <label
+          htmlFor="documentType"
+          className="block my-2 text-sm font-medium text-gray-900 dark:text-white"
+        >
+          Tipo de Documento
+        </label>
+        <select
+          id="documentType"
+          name="idType"
+          value={formData.idType}
+          onChange={handleDocumentTypeChange}
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+        >
+          <option value="fisica">Cédula Física</option>
+          <option value="juridica">Cédula Jurídica</option>
+          <option value="pasaporte">Pasaporte</option>
+        </select>
+      </div>
+
+      {/* Campo de identificación */}
       <div>
         <label
           htmlFor="id"
-          className="min-w-full block my-2 text-sm font-medium font-bolder text-gray-900 dark:text-white"
+          className="block my-2 text-sm font-medium text-gray-900 dark:text-white"
         >
-          Cédula
+          Número de {documentType === 'fisica'
+            ? 'Cédula Física'
+            : documentType === 'juridica'
+            ? 'Cédula Jurídica'
+            : 'Pasaporte'}
         </label>
         <input
           ref={inputRefs.id}
@@ -43,18 +68,19 @@ export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors
           name="id"
           id="id"
           value={formData.id}
-          onChange={handleIdChange}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          placeholder="0123456789"
+          onChange={handleInputChange}
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+          placeholder="Ingrese el número"
         />
-        {errors.id && <div className="text-red-500">{errors.id._errors[0]}</div>}
+        {errors.id && <div className="text-red-500">{errors.id}</div>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-8 md:gap-4">
-        <div className={`col-span-${isLastNameVisible ? '4' : '8'}`}>
+      {/* Nombre y Apellido */}
+      <div className="grid grid-cols-1 md:grid-cols-8 md:gap-4 mt-4">
+        <div className={`${documentType === 'fisica' || documentType === 'pasaporte' ? 'col-span-4' : 'col-span-8'}`}>
           <label
             htmlFor="name"
-            className="min-w-full block my-2 text-sm font-medium font-bolder text-gray-900 dark:text-white"
+            className="block my-2 text-sm font-medium text-gray-900 dark:text-white"
           >
             Nombre
           </label>
@@ -65,17 +91,16 @@ export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            placeholder=""
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
           />
-          {errors.name && <div className="text-red-500">{errors.name._errors[0]}</div>}
+          {errors.name && <div className="text-red-500">{errors.name}</div>}
         </div>
 
-        {isLastNameVisible && (
+        {documentType !== 'juridica' && (
           <div className="col-span-4">
             <label
               htmlFor="lastName"
-              className="min-w-full block my-2 text-sm font-medium text-gray-900 dark:text-white"
+              className="block my-2 text-sm font-medium text-gray-900 dark:text-white"
             >
               Apellidos
             </label>
@@ -86,10 +111,9 @@ export const PayerDetailsForm: React.FC<PayerDetailsProps> = ({ formData, errors
               name="lastName"
               value={formData.lastName}
               onChange={handleInputChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              placeholder=""
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
             />
-            {errors.lastName && <div className="text-red-500">{errors.lastName._errors[0]}</div>}
+            {errors.lastName && <div className="text-red-500">{errors.lastName}</div>}
           </div>
         )}
       </div>

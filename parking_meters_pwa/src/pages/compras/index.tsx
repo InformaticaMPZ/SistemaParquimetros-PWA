@@ -1,5 +1,6 @@
 import { BuyTime } from 'components/Pages/compras/BuyTime';
 import { Page } from '../../../components/General/Page';
+import withAuthRedirect from '../hoc';
 
 
 const ComprasPage = () => {
@@ -11,4 +12,4 @@ const ComprasPage = () => {
 	);
 };
 
-export default ComprasPage;
+export default withAuthRedirect(ComprasPage);

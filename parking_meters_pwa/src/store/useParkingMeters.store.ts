@@ -3,15 +3,13 @@ import { ParkingTime } from "@/types/parkingTime";
 import { PlateType } from "@/types/plateType";
 import { ParkingResponse } from "@/types/response";
 import { create } from "zustand";
-import CryptoJS from 'crypto-js';
 
 interface StoreState {
-  sessionId: string | null;
+  activeStatus: any;
   parkingRateList: Array<ParkingRate>;
   plateTypeList: Array<PlateType>;
   fastPlateTypeList: Array<any>;
   parkingTime: ParkingTime;
-  getStartSession: () => Promise<ParkingResponse>;
   getParkingRates: () => void;
   getParkingTime: () => Promise<ParkingResponse>;
   getPayment: (temporalId: string) => Promise<ParkingResponse>;
@@ -22,6 +20,7 @@ interface StoreState {
   resetParkingTime: () => void;
   getClientIP: () => void;
   getActive: () => Promise<ParkingResponse>;
+  getTime: (plateNumber: string, plateTypeId: string) => Promise<ParkingResponse>;
   loading: boolean;
   error: string | null;
 }
@@ -45,6 +44,7 @@ const initialParkingTime: ParkingTime = {
 };
 
 const useParkingMetersStore = create<StoreState>((set, get) => ({
+  activeStatus: null,
   parkingRateList: [],
   plateTypeList: [],
   fastPlateTypeList: [],
@@ -53,14 +53,16 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
   sessionId: "",
   error: null,
   getParkingRates: async () => {
-    const { sessionId } = get();
+    const { parkingRateList } = get();
+    if (parkingRateList && parkingRateList.length > 0) {
+      return;
+    }
     set({ loading: true, error: null });
     try {
       const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/parking-rate`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          'Credential': sessionId || "",
         },
       });
 
@@ -85,14 +87,11 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const { sessionId } = get();
-
       const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/plate-type`, {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "Credential": sessionId || ""
         }
       });
 
@@ -101,26 +100,56 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       }
 
       const data = await response.json();
-      const filterDescriptions = ["PARTICULARES", "MOTOCICLETAS", "CARGA LIVIANA", "PERMISOS DE TAXI"];
-    
-      const filteredPlateTypes = data.data.filter((plateType: { Description: string }) =>
-        filterDescriptions.includes(plateType.Description)
-      );
+      const filterDescriptions = ["PARTICULARES", "MOTOCICLETAS", "CARGA LIVIANA", "PERMISOS DE TAXI", "CARGA PESADA"];
+
+      const particularOrder = [
+        "PARTICULAR",
+        "PARTICULAR-COUPÉ",
+        "PARTICULAR-SEDAN",
+        "PARTICULAR-RURAL",
+
+      ];
+
+      const filteredPlateTypes = data.data
+        .filter((plateType: { Description: string }) =>
+          filterDescriptions.includes(plateType.Description)
+        )
+        .flatMap((plateType: { Description: string }) => {
+          if (plateType.Description === "CARGA PESADA") {
+            return [{ ...plateType, SubDescription: "CAMIÓN" }];
+          } else if (plateType.Description === "PARTICULARES") {
+            return particularOrder.map(sub => ({
+              ...plateType,
+              SubDescription: sub
+            }));
+          } else {
+            return [plateType];
+          }
+        })
+        .sort((a: { Description: string; SubDescription: string; }, b: { Description: string; SubDescription: string; }) => {
+          if (a.Description === "PARTICULARES" && b.Description === "PARTICULARES") {
+            return particularOrder.indexOf(a.SubDescription) - particularOrder.indexOf(b.SubDescription);
+          }
+          if (a.Description === "PARTICULARES") return -1;
+          if (b.Description === "PARTICULARES") return 1;
+          return 0;
+        });
 
       set({ plateTypeList: data.data, loading: false, fastPlateTypeList: filteredPlateTypes });
     } catch (error) {
+      console.error(error);
+
       set({ plateTypeList: [], error: (error as Error).message, loading: false });
     }
   },
   getParkingTime: async (): Promise<ParkingResponse> => {
-    const { sessionId, parkingTime } = get();
+    const { parkingTime } = get();
     set({ loading: true, error: null });
     try {
       const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/parking-time`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'Credential': sessionId || ""
         },
         body: JSON.stringify(parkingTime),
       });
@@ -131,6 +160,8 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
 
       const result = await response.json();
 
+      localStorage.setItem("plate_number", parkingTime.plateNumber);
+      localStorage.setItem("plate_type_id", parkingTime.plateTypeId.toString());
       set({ loading: false });
       return JSON.parse(JSON.stringify(result));
 
@@ -144,14 +175,14 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
   },
   getInfractions: async (): Promise<ParkingResponse> => {
     const currentParkingTime = get().parkingTime;
-    const { sessionId } = get();
     set({ loading: true, error: null });
+    let upperCasePlateNumber = currentParkingTime.plateNumber.toUpperCase();
+
     try {
-      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/infraction?plateNumber=${currentParkingTime.plateNumber}&plateTypeId=${currentParkingTime.plateTypeId}&ticketNumber=${currentParkingTime.ticketNumber}&isToday=false`, {
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/infraction?plateNumber=${upperCasePlateNumber}&plateTypeId=${currentParkingTime.plateTypeId}&ticketNumber=${currentParkingTime.ticketNumber}&isToday=false`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          'Credential': sessionId || "",
         }
       });
       if (!response.ok) {
@@ -159,15 +190,11 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       }
 
       const result = await response.json();
-      console.log(result);
-      
 
       set({ loading: false });
       return result;
 
     } catch (error) {
-      console.log(error);
-      
       set({ loading: false });
       return {
         success: false,
@@ -203,15 +230,14 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
     }
   },
   setPayment: async (): Promise<ParkingResponse> => {
-    
+
     set({ loading: true, error: null });
-    const { sessionId, parkingTime } = get();
+    const { parkingTime } = get();
     try {
       const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'Credential': sessionId || ""
         },
         body: JSON.stringify({
           ticket_number: parkingTime.ticketNumber,
@@ -260,78 +286,24 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
       console.error('Error fetching IP:', error);
     }
   },
-  getStartSession: async (): Promise<ParkingResponse> => {
-
-    set({ loading: true, error: null });
-    try {
-      const user = process.env.ODOO_USERNAME;
-      const password = process.env.ODOO_PASSWORD;
-      const encryptionKey = process.env.NEXT_PUBLIC_SESSION_KEY;
-
-      if (!user || !password || !encryptionKey) {
-        throw new Error("Environment variables not defined");
-      }
-
-      const iv = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
-
-      const encrypted = CryptoJS.AES.encrypt(password, CryptoJS.enc.Utf8.parse(encryptionKey), {
-        iv: CryptoJS.enc.Hex.parse(iv),
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7,
-      }).toString();
-
-      const encryptPassword = `${iv}:${encrypted}`;
-
-      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user: user, password: encryptPassword })
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to post parking time");
-      }
-
-      const result = await response.json();
-
-      set({ loading: false, sessionId: result.data.Login });
-
-      return {
-        success: result.success,
-        message: "Session started",
-        data: result.data.Login
-      };
-
-    } catch (error) {
-      set({ loading: false });
-      return {
-        success: false,
-        message: (error as Error).message
-      };
-    }
-  },
   getActive: async (): Promise<ParkingResponse> => {
-    const { sessionId } = get();
     set({ loading: true, error: null });
+
     try {
       const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/parameter`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'Credential': sessionId || ""
         },
-        body: JSON.stringify({"parameterName":"parking_meters.Is_Active"}),
+        body: JSON.stringify({ "parameterName": "parking_meters.Is_Active" }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to post parking time");
       }
 
       const result = await response.json();
 
-      set({ loading: false });
+      set({ loading: false, activeStatus: result.data.Value });
       return JSON.parse(JSON.stringify(result));
 
     } catch (error) {
@@ -341,7 +313,37 @@ const useParkingMetersStore = create<StoreState>((set, get) => ({
         message: (error as Error).message
       };
     }
-  }
+  },
+  getTime: async (plateNumber: string, plateTypeId: string): Promise<ParkingResponse> => {
+
+    set({ loading: true, error: null });
+    try {
+      const response = await fetch(`${process.env.NEXT_API_REQUEST}/api/v1/time`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ plateNumber: plateNumber, plateTypeId: plateTypeId })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to post parking time");
+      }
+
+      const result = await response.json();
+
+      set({ loading: false });
+      return result;
+
+    } catch (error) {
+      set({ loading: false });
+      return {
+        success: false,
+        message: (error as Error).message,
+      };
+    }
+  },
+
 }));
 
 export default useParkingMetersStore;

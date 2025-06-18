@@ -1,8 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
+import getSessionId from '@/utils/sessionManager';
 
 const cors = Cors({
-  methods: ['POST','GET','PUT','HEAD'],
+  methods: ['POST', 'GET', 'PUT', 'HEAD','OPTIONS'],
+  origin: (origin, callback) => {
+    const allowedOrigins =[ process.env.MPZ_DOMAIN, process.env.MPZ_DOMAIN+"/"];
+    if (!origin || (allowedOrigins && (allowedOrigins.includes(origin) || allowedOrigins.includes(origin)))) {
+        callback(null, true);
+    } else {
+        callback(new Error('Not allowed by CORS'));
+    }
+}
 });
 
 export const config = {
@@ -26,13 +35,21 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, cors);
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   if (req.method === 'GET') {
     try {
 
       let { plateNumber, plateTypeId, ticketNumber, isToday } = req.query;
- 
-      const sessionId = req.headers['credential'];     
+
+      let sessionId = req.headers['credential'];
+      if (!sessionId) {
+        const nuevaSession = await getSessionId(true);
+        sessionId = nuevaSession;
+      }
+      
       if (!sessionId) {
         throw new Error(`Permiso denegado, usuario no autenticado`);
       }
@@ -43,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ticket_number: ticketNumber,
         is_today: isToday
       }
-    
+
       const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/infractions`, {
         method: "POST",
         headers: {
@@ -62,14 +79,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!jsonResponse.result.success) {
         throw new Error(`Error desde Odoo: ${jsonResponse.message}`);
       }
-   
+
       if (jsonResponse.result.data.length === 0) {
         return res.status(200).json({
           success: true,
           data: [],
         });
       }
-      
+
       return res.status(200).json({
         success: true,
         data: jsonResponse.result.data,
@@ -78,13 +95,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(500).json({ error: 'Internal Server Error' });
     }
   } else if (req.method === 'POST') {
-   
+
     try {
       const sessionId = req.headers['credential'];
       if (!sessionId) {
         return res.status(401).json({ error: 'Permiso denegado, usuario no autenticado' });
       }
-  
+
       const infractionData = {
         ticket_number: req.body.ticketNumber,
         plate_type_id: req.body.plateTypeId,
@@ -102,13 +119,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         article_code_id: req.body.articleCodeId,
         clause_code_id: req.body.clauseCodeId,
         vehicle_code_id: req.body.vehiculeCodeId,
-        observations:req.body.observations,
-        latitude:req.body.latitude,
-        longitude:req.body.longitude,
-        surcharge:req.body.surcharge,
+        observations: req.body.observations,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
+        surcharge: req.body.surcharge,
         cancellation_description: req.body.cancellationDescription,
-        inspector_user_id: req.body.inspectorUserId,
-        image_list: req.body.imageList,
+        inspector_user_id: req.body.inspectorUserId
       };
 
       const response = await fetch(`${process.env.ODOO_REQUEST}/api/v1/infraction`, {
@@ -125,11 +141,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const jsonResponse = await response.json();
-
+      
       if (!jsonResponse.result.success) {
         return res.status(400).json({ error: jsonResponse.message });
       }
-      
+
       res.status(200).json({
         success: true,
         message: 'Infracción registrada exitosamente',
@@ -145,7 +161,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!sessionId) {
         return res.status(401).json({ error: 'Permiso denegado, usuario no autenticado' });
       }
-  
+
       const infractionData = {
         ticket_number: req.body.ticketNumber,
         plate_type_id: req.body.plateTypeId,
@@ -163,10 +179,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         article_code_id: req.body.articleCodeId,
         clause_code_id: req.body.clauseCodeId,
         vehicle_code_id: req.body.vehiculeCodeId,
-        observations:req.body.observations,
-        latitude:req.body.latitude,
-        longitude:req.body.longitude,
-        surcharge:req.body.surcharge,
+        observations: req.body.observations,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
+        surcharge: req.body.surcharge,
         cancellation_description: req.body.cancellationDescription,
         inspector_user_id: req.body.inspectorUserId,
         image_list: req.body.imageList,
@@ -190,7 +206,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!jsonResponse.result.success) {
         return res.status(400).json({ error: jsonResponse.message });
       }
-      
+
       res.status(200).json({
         success: true,
         message: 'Infracción registrada exitosamente',

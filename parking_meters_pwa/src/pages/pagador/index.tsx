@@ -1,14 +1,13 @@
-
 import { Page } from "components/General/Page";
 import { PaymentForm } from "components/Pages/pagador/PaymentForm";
+import withAuthRedirect from "../hoc";
 
-export default function PagadorPage() {
-  
+function PagadorPage() {
   return (
-    <>
-      <Page>
-        <PaymentForm />
-      </Page>
-    </>
+    <Page>
+      <PaymentForm />
+    </Page>
   );
 }
+
+export default withAuthRedirect(PagadorPage);

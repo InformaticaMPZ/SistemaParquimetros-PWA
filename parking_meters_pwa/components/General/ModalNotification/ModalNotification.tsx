@@ -1,11 +1,11 @@
 import React from "react";
 import { ReactElement, useEffect } from "react";
-import { FaRegLightbulb , FaRegTimesCircle, FaRegCheckCircle  } from 'react-icons/fa';
+import { FaRegLightbulb , FaRegTimesCircle, FaRegCheckCircle, FaInfoCircle  } from 'react-icons/fa';
 
 interface ModalNotificationProps {
   title?: string;
   message: ReactElement;
-  notificationType?: "success" | "error" | "warning";
+  notificationType?: "success" | "error" | "warning" | "info";
   showCancelButton?: boolean;
   showAprobeButton?: boolean;
   confirmText?: string;
@@ -26,6 +26,9 @@ const icons = {
   warning: (
     <FaRegLightbulb  size={90} className="mx-auto mt-6 mb-4 text-yellow-500 dark:text-yellow-400" />
   ),
+  info: (
+    <FaInfoCircle  size={90} className="mx-auto mt-6 mb-4 text-blue-500 dark:text-blue-400" />
+  ),
 };
 
 const titles = (title: string) => ({
@@ -37,6 +40,9 @@ const titles = (title: string) => ({
   ),
   warning: (
     <h1 className="mb-5 text-xl font-bold text-yellow-500 dark:text-yellow-400">{title}</h1>
+  ),
+  info: (
+    <h1 className="mb-5 text-xl font-bold text-blue-500 dark:text-blue-400">{title}</h1>
   ),
 });
 

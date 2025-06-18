@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { format } from 'date-fns';
-
+import { format, min } from 'date-fns';
+import { FaEdit } from 'react-icons/fa';
 interface CustomTimePickerProps {
     selectedTime: Date;
     minTime?: Date;
@@ -19,6 +19,26 @@ export const CustomTimePicker = ({ selectedTime, minTime, maxTime, label, onChan
     useEffect(() => {
         setIsClient(true);
     }, []);
+
+//     useEffect(() => {
+//     const today = new Date();
+//     const selectedDate = new Date(selectedTime);
+
+//     const isSameDate =
+//       today.getFullYear() === selectedDate.getFullYear() &&
+//       today.getMonth() === selectedDate.getMonth() &&
+//       today.getDate() === selectedDate.getDate();
+
+//     if (!isSameDate) {
+//       // Si no es hoy, establecer 7:00 AM
+//       const sevenAM = new Date(selectedDate);
+//       sevenAM.setHours(7, 0, 0, 0);
+//       setComputedMinTime(sevenAM);
+//     } else {
+//       // Si es hoy, usar el minTime original (o nada)
+//       setComputedMinTime(minTime);
+//     }
+//   }, [selectedTime, minTime]);
 
     const handleClickTime = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -41,11 +61,13 @@ export const CustomTimePicker = ({ selectedTime, minTime, maxTime, label, onChan
                             {label}
                         </label>
                         <button
-                            className="bg-blue-50 text-left border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="bg-blue-50 flex items-center justify-between border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             onClick={handleClickTime}
                         >
-                            {format(selectedTime, 'h:mm aa')}
+                            <span>{format(selectedTime, 'h:mm aa')}</span>
+                            <FaEdit className="w-4 h-4 text-gray-600 ml-2" />
                         </button>
+
                         {isOpenTime && (
                             <div className="flex justify-center mt-2">
                                 <DatePicker

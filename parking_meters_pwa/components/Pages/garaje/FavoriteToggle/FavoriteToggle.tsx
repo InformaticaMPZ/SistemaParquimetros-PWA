@@ -1,7 +1,8 @@
-import { FaCarSide, FaMotorcycle } from "react-icons/fa";
+import {FaStar } from "react-icons/fa";
 
-export const FavoriteToggle: React.FC<{ isFavorite?: boolean; onClick: () => void; isCar?: boolean }> = ({ isFavorite, onClick, isCar }) => {
-    const IconComponent = isCar ? FaCarSide : FaMotorcycle;
+export const FavoriteToggle: React.FC<{ isFavorite?: boolean; onClick: () => void; }> = ({ isFavorite, onClick }) => {
+
+    const IconComponent =  FaStar;
     const baseColor = isFavorite ? "orange" : "#233876";
     const hoverColor = isFavorite ? "gold" : "#1C64F2";
     const strokeColor = isFavorite ? "gray" : "black";
@@ -23,14 +24,14 @@ export const FavoriteToggle: React.FC<{ isFavorite?: boolean; onClick: () => voi
         >
             <IconComponent
                 color={baseColor}
-                size={60}
+                size={30}
                 style={{
                     stroke: strokeColor,
                     strokeWidth: strokeWidth,
                     transition: "color 0.3s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = hoverColor)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = baseColor)}
+                onMouseEnter={(e: { currentTarget: { style: { color: string; }; }; }) => (e.currentTarget.style.color = hoverColor)}
+                onMouseLeave={(e: { currentTarget: { style: { color: string; }; }; }) => (e.currentTarget.style.color = baseColor)}
             />
         </span>
     );
